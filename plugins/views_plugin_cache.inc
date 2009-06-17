@@ -154,7 +154,7 @@ class views_plugin_cache extends views_plugin {
    * All of the cached result data will be available in $view->result, as well,
    * so all ids used in the query should be discoverable.
    */
-  function post_render(&$view, &$output) { }
+  function post_render(&$output) { }
 
   /**
    * Start caching javascript, css and other out of band info.
