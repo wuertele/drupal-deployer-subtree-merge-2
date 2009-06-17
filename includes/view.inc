@@ -819,7 +819,7 @@ class view extends views_db_object {
       }
 
       // Let the theme play too, because pre render is a very themey thing.
-      $function = $GLOBALS['theme']) . '_views_pre_render';
+      $function = $GLOBALS['theme'] . '_views_pre_render';
       if (function_exists($function) {
         $function($this, $this->display_handler->output, $cache);
       }
@@ -848,7 +848,7 @@ class view extends views_db_object {
     }
 
     // Let the theme play too, because post render is a very themey thing.
-    $function = $GLOBALS['theme']) . '_views_post_render';
+    $function = $GLOBALS['theme'] . '_views_post_render';
     if (function_exists($function) {
       $function($this, $this->display_handler->output, $cache);
     }
