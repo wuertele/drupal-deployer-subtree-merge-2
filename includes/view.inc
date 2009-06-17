@@ -839,7 +839,7 @@ class view extends views_db_object {
       }
     }
 
-    $cache->post_render($this, $this->display_handler->output);
+    $cache->post_render($this->display_handler->output);
 
     // Let modules modify the view output after it is rendered.
     foreach (module_implements('views_post_render') as $module) {
