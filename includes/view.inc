@@ -612,6 +612,8 @@ class view extends views_db_object {
       if ($this->style_plugin->build_sort()) {
         $this->_build('sort');
       }
+      // allow the plugin to build second sorts as well.
+      $this->style_plugin->build_sort_post();
     }
 
     // Allow display handler to affect the query:
@@ -839,7 +841,9 @@ class view extends views_db_object {
       }
     }
 
-    $cache->post_render($this->display_handler->output);
+    if ($cache) {
+      $cache->post_render($this->display_handler->output);
+    }
 
     // Let modules modify the view output after it is rendered.
     foreach (module_implements('views_post_render') as $module) {
