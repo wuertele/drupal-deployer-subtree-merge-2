@@ -251,6 +251,7 @@ class views_plugin_cache extends views_plugin {
       $key_data = array(
         'build_info' => $this->view->build_info,
         'roles' => array_keys($user->roles),
+        'super-user' => $user->uid == 1, // special caching for super user.
       );
       foreach (array('exposed_info', 'page', 'sort', 'order') as $key) {
         if (isset($_GET[$key])) {
@@ -270,6 +271,7 @@ class views_plugin_cache extends views_plugin {
       $key_data = array(
         'result' => $this->view->result,
         'roles' => array_keys($user->roles),
+        'super-user' => $user->uid == 1, // special caching for super user.
       );
 
       $this->_output_key = $this->view->name . ':' . $this->display->id . ':output:' . md5(serialize($key_data));
