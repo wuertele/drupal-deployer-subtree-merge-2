@@ -354,7 +354,7 @@ function template_preprocess_views_view_table(&$vars) {
         }
 
         // Place the field into the column, along with an optional separator.
-        if (!empty($vars['rows'][$num][$column])) {
+        if (isset($vars['rows'][$num][$column]) && (!empty($vars['rows'][$num][$column]) || $vars['rows'][$num][$column]) == 0) {
           if (!empty($options['info'][$column]['separator'])) {
             $vars['rows'][$num][$column] .= filter_xss_admin($options['info'][$column]['separator']);
           }
