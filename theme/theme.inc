@@ -348,19 +348,20 @@ function template_preprocess_views_view_table(&$vars) {
       if (!empty($fields[$field]) && empty($fields[$field]->options['exclude'])) {
         $field_output = $renders[$num][$field];
 
+        if (!isset($vars['rows'][$num][$column])) {
+          $vars['rows'][$num][$column] = '';
+        }
+
         // Don't bother with separators and stuff if the field does not show up.
-        if (empty($field_output) && !empty($vars['rows'][$num][$column])) {
+        if ($field_output === '') {
           continue;
         }
 
         // Place the field into the column, along with an optional separator.
-        if (isset($vars['rows'][$num][$column]) && (!empty($vars['rows'][$num][$column]) || $vars['rows'][$num][$column]) == 0) {
+        if ($vars['rows'][$num][$column] !== '') {
           if (!empty($options['info'][$column]['separator'])) {
             $vars['rows'][$num][$column] .= filter_xss_admin($options['info'][$column]['separator']);
           }
-        }
-        else {
-          $vars['rows'][$num][$column] = '';
         }
 
         $vars['rows'][$num][$column] .= $field_output;
