@@ -264,7 +264,6 @@ class views_query {
     }
 
     $join = $this->adjust_join($join, $relationship);
-    dsm($join);
 
     return $this->queue_table($table, $relationship, $join, $alias);
   }
