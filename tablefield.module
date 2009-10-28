@@ -45,40 +45,42 @@ function tablefield_field_info() {
 
 /**
  * Implementation of hook_field_settings().
- *
- * @todo build a case for 'views data'
  */
 function tablefield_field_settings($op, $field) {
   switch ($op) {
     case 'form':
       $form = array();
-      $form['count_cols'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Default number of columns. This can be overridden in each node.'),
-        '#element_validate' => array('_element_validate_number'),
-        '#default_value' => $field['count_cols'],
+      $options = array(0 => t('Plain text'), 1 => t('Filtered text (user selects input format)'));
+      $form['cell_processing'] = array(
+        '#type' => 'radios',
+        '#title' => t('Table cell processing'),
+        '#default_value' => is_numeric($field['cell_processing']) ? $field['cell_processing'] : 0,
+        '#options' => $options,
       );
-      $form['count_rows'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Default number of rows. This can be overridden in each node.'),
-        '#element_validate' => array('_element_validate_number'),
-        '#default_value' => $field['count_rows'],
+      $form['default_message'] = array(
+        '#type' => 'markup',
+        '#value' => t('To specify a default table, use the &quot;Default Value&quot; above. There you can specify a default number of rows/columns and values.'),
       );
-      break;
+      return $form;
+
     case 'save':
-      $values = array('count_cols', 'count_rows');
+      $values = array('cell_processing', 'count_cols', 'count_rows');
 
       return $values;
-      break;
+
     case 'database columns':
-      return array(
-        'value' => array('type' => 'text', 'default' => ''),
-      );
-      break;
+      $columns = array();
+
+      // Input format
+      if (!empty($field['cell_processing'])) {
+        $columns['format'] = array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE, 'views' => FALSE);
+      }
+      $columns['value'] = array('type' => 'text', 'default' => '');
+      return $columns;
+
     case 'views data':
       $data = content_views_field_views_data($field);
       return $data;
-      break;
   }
 }
 
@@ -118,6 +120,21 @@ function tablefield_field($op, &$node, $field, &$items, $teaser, $page) {
         // Pull the header for theming
         $header = $tabledata[0];
         unset($tabledata[0]);
+
+        // Run it through input filters
+        if (!empty($tabledata)) {
+          foreach ($tabledata as $row_key => $row) {
+            foreach ($row as $col_key => $cell) {
+              if (!empty($field['cell_processing'])) {
+                $tabledata[$row_key][$col_key] = check_markup($cell, $table['format']);
+              }
+              else {
+                $tabledata[$row_key][$col_key] = check_plain($cell);
+              }
+            }
+          }
+        }
+
         $items[$delta]['value'] = theme('tablefield_view', $header, $tabledata, $node->nid, $delta);
       }
 
@@ -260,6 +277,7 @@ function tablefield_widget(&$form, &$form_state, $field, $items, $delta = 0) {
  */
 function tablefield_process($element, $edit, $form_state, $form) {
   $delta = $element['#delta'];
+  $field = $form['#field_info'][$element['#field_name']];
 
   if (isset($element['#value']['tablefield'])) {
     // A form was submitted
@@ -271,11 +289,11 @@ function tablefield_process($element, $edit, $form_state, $form) {
   }
   else {
     // Get the widget default value
-    $default_value = tablefield_rationalize_table($form['#field_info'][$element['#field_name']]['widget']['default_value'][0]['tablefield']);
+    $default_value = tablefield_rationalize_table($field['widget']['default_value'][0]['tablefield']);
   }
 
   $element['tablefield'] = array(
-    '#title' => t('Data Table'),
+    '#title' => $field['widget']['label'],
     '#description' => t('The first row will appear as the table header.'),
     '#attributes' => array('id' => 'node-tablefield-' . $delta, 'class' => 'node-tablefield'),
     '#type' => 'fieldset',
@@ -367,6 +385,13 @@ function tablefield_process($element, $edit, $form_state, $form) {
     '#value' => t('Rebuild Table'),
     '#attributes' => array('class' => 'tablefield-rebuild'),
   );
+
+  if (!empty($field['cell_processing'])) {
+    $filter_key = $element['#columns'][0];
+    $format = isset($element['#value'][$filter_key]) ? $element['#value'][$filter_key] : FILTER_FORMAT_DEFAULT;
+    $parents = array_merge($element['#parents'] , array($filter_key));
+    $element[$filter_key] = filter_form($format, 1, $parents);
+  }
 
   return $element;
 }
