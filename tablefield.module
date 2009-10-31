@@ -4,7 +4,7 @@
 /**
  * @file
  * This module provides a set of fields that can be used to store
- * tabular data with a node
+ * tabular data with a node. The implementation uses a custom CCK widget.
  */
 
 /**
@@ -91,11 +91,6 @@ function tablefield_field($op, &$node, $field, &$items, $teaser, $page) {
   switch ($op) {
     case 'presave':
       foreach ($items as $delta => $table) {
-        // Get rid of configuration data sent in form_state
-        //unset($table['tablefield']['count_rows']);
-        //unset($table['tablefield']['count_cols']);
-        //unset($table['tablefield']['rebuild']);
-
         $tablefield = array();
         foreach ($table['tablefield'] as $key => $value) {
           $tablefield[$key] = $value;
@@ -111,31 +106,35 @@ function tablefield_field($op, &$node, $field, &$items, $teaser, $page) {
     case 'sanitize':
       // We need to make the table data available to display
       foreach ($items as $delta => $table) {
-        if (isset($table['tablefield'])) {
+        if (!empty($table['tablefield'])) {
           $tabledata = tablefield_rationalize_table($table['tablefield']);
         }
-        elseif (isset($table['value'])) {
+        elseif (!empty($table['value'])) {
           $tabledata = tablefield_rationalize_table(unserialize($table['value']));
         }
-        // Pull the header for theming
-        $header = $tabledata[0];
-        unset($tabledata[0]);
-
-        // Run it through input filters
-        if (!empty($tabledata)) {
-          foreach ($tabledata as $row_key => $row) {
-            foreach ($row as $col_key => $cell) {
-              if (!empty($field['cell_processing'])) {
-                $tabledata[$row_key][$col_key] = check_markup($cell, $table['format']);
-              }
-              else {
-                $tabledata[$row_key][$col_key] = check_plain($cell);
+    
+        // Multivalue fields will have one row in the db, so make sure that it isn't empty 
+        if (isset($tabledata)) {
+          // Pull the header for theming
+          $header = $tabledata[0];
+          unset($tabledata[0]);
+  
+          // Run it through input filters
+          if (!empty($tabledata)) {
+            foreach ($tabledata as $row_key => $row) {
+              foreach ($row as $col_key => $cell) {
+                if (!empty($field['cell_processing'])) {
+                  $tabledata[$row_key][$col_key] = check_markup($cell, $table['format']);
+                }
+                else {
+                  $tabledata[$row_key][$col_key] = check_plain($cell);
+                }
               }
             }
           }
-        }
 
-        $items[$delta]['value'] = theme('tablefield_view', $header, $tabledata, $node->nid, $delta);
+          $items[$delta]['value'] = theme('tablefield_view', $header, $tabledata, $node->nid, $delta);
+        }
       }
 
       break;
@@ -146,15 +145,10 @@ function tablefield_field($op, &$node, $field, &$items, $teaser, $page) {
  * Implementation of hook_content_is_empty().
  */
 function tablefield_content_is_empty($item, $field) {
-  // First see if the submitted field matches the default
-  unset($item['tablefield']['rebuild']);
-  if ($item['tablefield'] == $field['widget']['default_value'][0]['tablefield']) {
-    return TRUE; 
-  }
-
   // Remove the preference fields to see if the table cells are all empty
   unset($item['tablefield']['count_cols']);
   unset($item['tablefield']['count_rows']);
+  unset($item['tablefield']['rebuild']);
 
   if (!empty($item['tablefield'])) {
     foreach ($item['tablefield'] as $cell) {
@@ -289,7 +283,8 @@ function tablefield_process($element, $edit, $form_state, $form) {
   }
   else {
     // Get the widget default value
-    $default_value = tablefield_rationalize_table($field['widget']['default_value'][0]['tablefield']);
+    $default_count_cols = $field['widget']['default_value'][0]['tablefield']['count_cols'];
+    $default_count_rows = $field['widget']['default_value'][0]['tablefield']['count_rows'];
   }
 
   $element['tablefield'] = array(
@@ -321,8 +316,8 @@ function tablefield_process($element, $edit, $form_state, $form) {
     }
   }
   else {
-    $count_cols = 5;
-    $count_rows = 5;
+    $count_cols = $default_count_cols;
+    $count_rows = $default_count_rows;
   }
 
   // Override the number of rows/columns if the user rebuilds the form
@@ -360,7 +355,7 @@ function tablefield_process($element, $edit, $form_state, $form) {
   }
   $element['tablefield']['break' . $i] = array(
     '#type' => 'markup',
-    '#value' => '</table',
+    '#value' => '</table>',
   );
 
   // Allow the user to add more rows/columns
@@ -370,7 +365,8 @@ function tablefield_process($element, $edit, $form_state, $form) {
     '#size' => 5,
     '#prefix' => '<div class="clear-block">',
     '#suffix' => '</div>',
-    '#default_value' => $count_cols,
+    //'#default_value' => $count_cols,
+    '#value' => $count_cols,
   );
   $element['tablefield']['count_rows'] = array(
     '#title' => t('How many Rows'),
@@ -378,7 +374,8 @@ function tablefield_process($element, $edit, $form_state, $form) {
     '#size' => 5,
     '#prefix' => '<div class="clear-block">',
     '#suffix' => '</div>',
-    '#default_value' => $count_rows,
+    //'#default_value' => $count_rows,
+    '#value' => $count_rows,
   );
   $element['tablefield']['rebuild'] = array(
     '#type' => 'button',
