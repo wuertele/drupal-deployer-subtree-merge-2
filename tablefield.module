@@ -75,7 +75,7 @@ function tablefield_field_settings($op, $field) {
       if (!empty($field['cell_processing'])) {
         $columns['format'] = array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE, 'views' => FALSE);
       }
-      $columns['value'] = array('type' => 'text', 'default' => '');
+      $columns['value'] = array('type' => 'text');
       return $columns;
 
     case 'views data':
