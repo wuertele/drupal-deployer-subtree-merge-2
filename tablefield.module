@@ -91,11 +91,17 @@ function tablefield_field($op, &$node, $field, &$items, $teaser, $page) {
   switch ($op) {
     case 'presave':
       foreach ($items as $delta => $table) {
-        $tablefield = array();
-        foreach ($table['tablefield'] as $key => $value) {
-          $tablefield[$key] = $value;
+        if (empty($table['value'])) {
+          $tablefield = array();
+          foreach ($table['tablefield'] as $key => $value) {
+            $tablefield[$key] = $value;
+          }
+          $items[$delta]['value'] = serialize($tablefield);
         }
-        $items[$delta]['value'] = serialize($tablefield);
+        elseif (empty($table['tablefield'])) {
+          // Batch processing only provides the 'value'
+          $items[$delta]['tablefield'] = unserialize($items[$delta]['value']);
+        }
       }
       break;
     case 'load':
@@ -124,10 +130,10 @@ function tablefield_field($op, &$node, $field, &$items, $teaser, $page) {
             foreach ($tabledata as $row_key => $row) {
               foreach ($row as $col_key => $cell) {
                 if (!empty($field['cell_processing'])) {
-                  $tabledata[$row_key][$col_key] = check_markup($cell, $table['format']);
+                  $tabledata[$row_key][$col_key] = array('data' => check_markup($cell, $table['format']), 'class' => 'row_' . $row_key . ' col_' . $col_key);
                 }
                 else {
-                  $tabledata[$row_key][$col_key] = check_plain($cell);
+                  $tabledata[$row_key][$col_key] = array('data' => check_plain($cell), 'class' => 'row_' . $row_key . ' col_' . $col_key);
                 }
               }
             }
@@ -149,11 +155,9 @@ function tablefield_content_is_empty($item, $field) {
   unset($item['tablefield']['count_cols']);
   unset($item['tablefield']['count_rows']);
   unset($item['tablefield']['rebuild']);
-
   if (!empty($item['tablefield'])) {
     foreach ($item['tablefield'] as $cell) {
       if (!empty($cell)) {
-        $empty = FALSE;
         return FALSE;
       }
     }
@@ -276,6 +280,11 @@ function tablefield_process($element, $edit, $form_state, $form) {
   if (isset($element['#value']['tablefield'])) {
     // A form was submitted
     $default_value = tablefield_rationalize_table($element['#value']['tablefield']);
+
+    // Catch empty form sumissions for required tablefields
+    if ($form_state['submitted'] && $element['#required'] && tablefield_content_is_empty($element['#value'], $field)) {
+      form_set_error($element['#field_name'], t('@field is a required field.', array('@field' => $form[$element['#parents'][0]]['#title'])));
+    }
   }
   elseif (isset($element['#default_value']['value'])) {
     // Default from database
@@ -299,6 +308,11 @@ function tablefield_process($element, $edit, $form_state, $form) {
     '#delta' => $element['#delta'],
     '#columns' => $element['#columns'],
   );
+
+  // Give the fieldset the appropriate class if it is required
+  if ($element['#required']) {
+    $element['tablefield']['#title'] .= ' <span class="form-required" title="' . t('This field is required') . '">*</span>';
+  }
 
   if ($form['#id'] == 'content-field-edit-form') {
     $element['tablefield']['#description'] = t('The first row will appear as the table header. This form defines the table field defaults, but the number of rows/columns and content can be overridden on a per-node basis.');
