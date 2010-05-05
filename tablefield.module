@@ -121,11 +121,19 @@ function tablefield_field($op, &$node, $field, &$items, $teaser, $page) {
     
         // Multivalue fields will have one row in the db, so make sure that it isn't empty 
         if (isset($tabledata)) {
-          // Pull the header for theming
-          $header = $tabledata[0];
+
+          // Run the table head through input filters
+          foreach ($tabledata[0] as $header_key => $header_data) {
+            if (!empty($field['cell_processing'])) {
+              $header[$header_key] = array('data' => check_markup($header_data, $table['format']), 'class' => 'row_0' . ' col_' . $header_key);
+            }
+            else {
+              $header[$header_key] = array('data' => check_plain($header_data), 'class' => 'row_0' . ' col_' . $header_key);
+            }
+          }
           unset($tabledata[0]);
   
-          // Run it through input filters
+          // Run the table body through input filters
           if (!empty($tabledata)) {
             foreach ($tabledata as $row_key => $row) {
               foreach ($row as $col_key => $cell) {
