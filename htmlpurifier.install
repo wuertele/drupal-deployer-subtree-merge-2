@@ -41,6 +41,15 @@ function htmlpurifier_requirements($phase) {
   $requirements = array();
   $t = get_t();
 
+  // HACK: If libraries api module is not installed but available, load
+  // it.  This can arise when an install profile is installing multiple
+  // modules, because the HTMLPurifier module does not publish a
+  // libraries dependency in order to stay backwards-compatible.  This
+  // fixes Bug #839490.
+  if (!function_exists('libraries_get_path') && file_exists(dirname(__FILE__) . '/../libraries/libraries.module')) {
+    require_once(dirname(__FILE__) . '/../libraries/libraries.module');
+  }
+
   // If it's still not available, use something else
   $complain_loc = false;
   if (function_exists('libraries_get_path')) {
