@@ -2,6 +2,9 @@
 - Fixed #839490; can't find library from install profile
 - Fixed #819728; make use of Filter.ExtractStyleBlocks.  Thanks
   Vector- for contributing the patch.
+- Fixed #586746; Rate limit new version checks
+- Deprecated Filter.YouTube in favor of SafeObject/FlashCompat.
+  Thanks John Morahan for contributing the patch.
 
 6.x-2.3, released 2010-06-09
 - Fixed #819914; version never updates

@@ -105,8 +105,7 @@ function htmlpurifier_requirements($phase) {
   if ($phase=='runtime') {
     $current = variable_get('htmlpurifier_version_current', FALSE);
     if (!$current) {
-      htmlpurifier_cron();
-      $current = variable_get('htmlpurifier_version_current', FALSE);
+      $current = htmlpurifier_check_version();
     }
     $ours = variable_get('htmlpurifier_version_ours', FALSE);
     if (!$ours || version_compare($ours, $req_version, '<')) {
@@ -139,7 +138,18 @@ function htmlpurifier_requirements($phase) {
       }
     }
 
-    if (!$ours || version_compare($current, $ours, '>')) {
+    if (!$current) {
+      $requirements['htmlpurifier_check'] = array(
+        'title' => $t('HTML Purifier Library'),
+        'value' => $ours,
+        'description' => $t('Unable to check for the latest version of the
+        HTML Purifier library.  You will need to check manually at
+        <a href="http://htmlpurifier.org">htmlpurifier.org</a> to find out if
+        the version you are using is out of date.'),
+        'severity' => REQUIREMENT_WARNING,
+      );
+    }
+    elseif (!$ours || version_compare($current, $ours, '>')) {
       // Update our version number if it can't be found, or there's a
       // mismatch.  This won't do anything if _htmlpurifier_load() has
       // already been called.  An equivalent formulation would be

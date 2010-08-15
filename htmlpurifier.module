@@ -32,16 +32,34 @@ function htmlpurifier_help($path, $arg) {
 
 /**
  * Implementation of hook_cron().
- * @note
- *    Checks for updates to the HTML Purifier library.
  */
 function htmlpurifier_cron() {
-  // Maybe this should be changed in the future:
-  $result  = drupal_http_request('http://htmlpurifier.org/live/VERSION');
-  $version = trim($result->data);
-  variable_set('htmlpurifier_version_current', $version);
+  // Force an attempt at checking for a new version; this is safe to do in
+  // hook_cron because a slow timeout will not degrade the user experience.
+  htmlpurifier_check_version(TRUE);
 }
 
+/**
+ * Checks for updates to the HTML Purifier library.
+ */
+function htmlpurifier_check_version($force = FALSE) {
+  if ($force || !variable_get('htmlpurifier_version_check_failed', FALSE)) {
+    // Maybe this should be changed in the future:
+    $result  = drupal_http_request('http://htmlpurifier.org/live/VERSION');
+    if ($result->code == 200) {
+      $version = trim($result->data);
+      variable_set('htmlpurifier_version_check_failed', FALSE);
+      variable_set('htmlpurifier_version_current', $version);
+      return $version;
+    }
+    else {
+      variable_set('htmlpurifier_version_check_failed', TRUE);
+      // Delete any previously known "latest" version so that people can be
+      // alerted if a problem appears on a previously working site.
+      variable_del('htmlpurifier_version_current');
+    }
+  }
+}
 
 /**
  * Implementation of hook_filter().
@@ -420,11 +438,12 @@ function _htmlpurifier_settings($delta, $format) {
         'URI.DisableExternalResources',
         'URI.DisableResources',
         'URI.Munge',
-        'Filter.YouTube',
         'Attr.EnableID',
         'HTML.Allowed',
         'HTML.ForbiddenElements',
         'HTML.ForbiddenAttributes',
+        'HTML.SafeObject',
+        'Output.FlashCompat',
         'AutoFormat.RemoveEmpty',
         'AutoFormat.Linkify',
         'AutoFormat.AutoParagraph',
