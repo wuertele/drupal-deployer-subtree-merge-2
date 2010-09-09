@@ -38,8 +38,18 @@ function htmlpurifier_uninstall() {
 function htmlpurifier_requirements($phase) {
   // This version of HTML Purifier is required
   static $req_version = '4.0.0';
+  static $req_php_version = '5.0.0';
   $requirements = array();
   $t = get_t();
+
+  if (version_compare(phpversion(), $req_php_version) < 0) {
+    $requirements['htmlpurifier_php'] = array (
+      'title' => $t('PHP version for HTML Purifier library'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('PHP version is too low to run HTML Purifier.  HTML Purifier requires PHP 5 or later.'),
+    );
+    return $requirements;
+  }
 
   // HACK: If libraries api module is not installed but available, load
   // it.  This can arise when an install profile is installing multiple

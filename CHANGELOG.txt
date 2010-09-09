@@ -3,6 +3,7 @@
 - Fixed #819728; make use of Filter.ExtractStyleBlocks.  Thanks
   Vector- for contributing the patch.
 - Fixed #586746; Rate limit new version checks
+- Fixed #764974: Give friendly error message if running under PHP4
 - Deprecated Filter.YouTube in favor of SafeObject/FlashCompat.
   Thanks John Morahan for contributing the patch.
 

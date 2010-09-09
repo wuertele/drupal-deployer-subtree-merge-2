@@ -277,6 +277,14 @@ function _htmlpurifier_load() {
     }
   }
 
+  if (version_compare(phpversion(), '5') < 0 || true) {
+    // If your version of PHP is too old, you're going to fail anyway
+    // when you attempt to include the HTML Purifier library, so we
+    // might as well try to give a useful error message.
+    echo 'Your version of PHP is too old to run HTML Purifier, needs PHP 5 or later';
+    exit;
+  }
+
   require_once "$library_path/library/HTMLPurifier.auto.php";
   require_once "$module_path/HTMLPurifier_DefinitionCache_Drupal.php";
 
