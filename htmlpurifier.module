@@ -277,7 +277,7 @@ function _htmlpurifier_load() {
     }
   }
 
-  if (version_compare(phpversion(), '5') < 0 || true) {
+  if (version_compare(phpversion(), '5') < 0) {
     // If your version of PHP is too old, you're going to fail anyway
     // when you attempt to include the HTML Purifier library, so we
     // might as well try to give a useful error message.
