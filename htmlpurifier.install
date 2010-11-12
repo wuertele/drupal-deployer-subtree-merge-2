@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function htmlpurifier_schema() {
   $t = get_t();
@@ -16,40 +16,24 @@ DESCRIPTION
 }
 
 /**
- * Implementation of hook_install().
- */
-function htmlpurifier_install() {
-  drupal_install_schema('htmlpurifier');
-}
-
-/**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function htmlpurifier_uninstall() {
-  drupal_uninstall_schema('htmlpurifier');
-  db_query("DELETE FROM {variable} WHERE name LIKE 'htmlpurifier%%'");
+  db_delete('variable')
+    ->condition('name', 'htmlpurifier%', 'LIKE')
+    ->execute();
 }
 
 /**
- * Implementation of hook_requirements().
+ * Implements hook_requirements().
  *
  * Checks the version of HTML Purifier on install and issues an error if there is a problem
  */
 function htmlpurifier_requirements($phase) {
   // This version of HTML Purifier is required
   static $req_version = '4.0.0';
-  static $req_php_version = '5.0.0';
   $requirements = array();
   $t = get_t();
-
-  if (version_compare(phpversion(), $req_php_version) < 0) {
-    $requirements['htmlpurifier_php'] = array (
-      'title' => $t('PHP version for HTML Purifier library'),
-      'severity' => REQUIREMENT_ERROR,
-      'description' => $t('PHP version is too low to run HTML Purifier.  HTML Purifier requires PHP 5 or later.'),
-    );
-    return $requirements;
-  }
 
   // HACK: If libraries api module is not installed but available, load
   // it.  This can arise when an install profile is installing multiple
@@ -237,3 +221,12 @@ function htmlpurifier_update_6200() {
 }
 
 function htmlpurifier_update_6201() {}
+
+/**
+ * TODO: Perform the D6->D7 upgrade.
+ *
+ * We need to update filter names and settings, in the same way that
+ * filter_update_7003() and filter_update_7004() do.
+ */
+// function htmlpurifier_update_7000() {
+// }

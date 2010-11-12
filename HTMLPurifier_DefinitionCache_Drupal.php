@@ -72,8 +72,10 @@ class HTMLPurifier_DefinitionCache_Drupal extends HTMLPurifier_DefinitionCache
   }
 
   function cleanup($config) {
-    $res = db_query("SELECT cid FROM {cache} WHERE cid LIKE '%s%%'", 'htmlpurifier:');
-    while ($row = db_fetch_object($res)) {
+    // TODO: This does not work with the pluggable cache system in Drupal 7,
+    // since it assumes a database cache is being used.
+    $res = db_query("SELECT cid FROM {cache} WHERE cid LIKE :cid", array(':cid' => 'htmlpurifier:%'));
+    foreach ($res as $row) {
       $key = substr($row->cid, 13); // 13 == strlen('htmlpurifier:')
       if ($this->isOld($key, $config)) {
         cache_clear_all($row->cid, 'cache');

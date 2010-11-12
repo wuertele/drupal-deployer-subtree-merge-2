@@ -11,23 +11,44 @@
 // -- HOOK IMPLEMENTATIONS -------------------------------------------------- //
 
 /**
- * Implementation of hook_flush_caches().
+ * Implements hook_flush_caches().
  */
 function htmlpurifier_flush_caches() {
     return array('cache_htmlpurifier');
 }
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function htmlpurifier_help($path, $arg) {
   $output = NULL;
   switch ($path) {
-    case 'admin/modules#htmlpurifier':
-      $output = t('Filter that removes malicious HTML and ensures standards compliant output.');
+    case 'admin/help#htmlpurifier':
+      $output = t(<<<TEXT
+The HTML Purifier Drupal module provides a text filter that removes
+malicious HTML and ensures standards compliant output.  You can modify
+text formats at <a href="@formats">the format configurations page</a>.
+TEXT
+, array('@formats' => url('admin/config/content/formats')));
       break;
   }
   return $output;
+}
+
+/*
+ * Implements hook_menu().
+ */
+function htmlpurifier_menu() {
+  $items['admin/config/content/htmlpurifier'] = array(
+    'title' => 'HTML Purifier settings',
+    'description' => 'Configure overall settings for the HTML Purifier filters, including how they are cached.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('htmlpurifier_admin_settings'),
+    'access arguments' => array('administer filters'),
+    'file' => 'htmlpurifier.admin.inc',
+  );
+
+  return $items;
 }
 
 /**
@@ -62,52 +83,31 @@ function htmlpurifier_check_version($force = FALSE) {
 }
 
 /**
- * Implementation of hook_filter().
+ * Implementation of hook_filter_info().
  */
-function htmlpurifier_filter($op, $delta = 0, $format = -1, $text = '') {
-  switch ($op) {
-    case 'list':
-      return array(0 => t('HTML Purifier'), 1 => t('HTML Purifier (advanced)'));
-
-    case 'no cache':
-      // Since HTML Purifier implements its own caching layer, having filter
-      // cache it again is wasteful. Returns FALSE if double caching is permitted.
-      return !variable_get("htmlpurifier_doublecache", FALSE);
-
-    case 'description':
-      $common = t(
-        'Removes malicious HTML code and ensures that the output '.
-        'is standards compliant. <strong>Warning:</strong> For performance '.
-        'reasons, please ensure that there are no highly dynamic filters before HTML Purifier. '
-      );
-      switch ($delta) {
-        case 0:
-          return $common;
-        case 1:
-          return $common . t('<em>This version has advanced configuration options, do not enable both at the same time.</em>');
-      }
-
-    case 'prepare':
-      return $text;
-
-    case 'process':
-      return _htmlpurifier_process($text, $format);
-
-    case 'settings':
-      return _htmlpurifier_settings($delta, $format);
-
-    default:
-      return NULL;
-  }
-}
-
-/**
- * Implementation of hook_filter_tips().
- */
-function htmlpurifier_filter_tips($delta, $format, $long = FALSE) {
-  if (variable_get("htmlpurifier_help_$format", TRUE)) {
-    return t('HTML tags will be transformed to conform to HTML standards.');
-  }
+function htmlpurifier_filter_info() {
+  _htmlpurifier_load();
+  $filters['htmlpurifier_basic'] = array(
+    'title' => t('HTML Purifier'),
+    'description' => t('Removes malicious HTML code and ensures that the ' .
+       'output is standards compliant. <strong>Warning:</strong> For ' .
+       'performance reasons, please ensure that there are no highly dynamic ' .
+       'filters before HTML Purifier. '),
+    'process callback' => '_htmlpurifier_process',
+    'settings callback' => '_htmlpurifier_settings',
+    'default settings' => array(
+      'htmlpurifier_help' => TRUE,
+    ),
+    'tips callback' => '_htmlpurifier_filter_tips',
+    // Since HTML Purifier implements its own caching layer, having filter
+    // cache it again is wasteful. Returns TRUE if double caching is permitted.
+    'cache' => variable_get("htmlpurifier_doublecache", FALSE),
+  );
+  $filters['htmlpurifier_advanced'] = array(
+    'title' => t('HTML Purifier (advanced)'),
+    'description' => $filters['htmlpurifier_basic']['description'] . t('<em>This version has advanced configuration options, do not enable both at the same time.</em>'),
+  ) + $filters['htmlpurifier_basic'];
+  return $filters;
 }
 
 /**
@@ -125,6 +125,32 @@ function htmlpurifier_nodeapi(&$node, $op, $a3, $a4) {
     }
   }
   // @todo: Deal with CCK fields - probably needs to go in op alter?
+}
+
+// -- INTERNAL FUNCTIONS ---------------------------------------------------- //
+
+/**
+ * Filter tips callback, used by htmlpurifier_filter_info().
+ */
+function _htmlpurifier_filter_tips($delta, $format, $long = FALSE) {
+  if (!empty($filter->settings['htmlpurifier_help'])) {
+    return t('HTML tags will be transformed to conform to HTML standards.');
+  }
+}
+
+/**
+ * Process callback, used by htmlpurifier_filter_info().
+ *
+ * Passes data along to the helper function with instructions to always try to
+ * use this module's custom cache mechanism.
+ *
+ * We need this helper function because the filter system passes in $cache as
+ * fifth parameter to this hook (which corresponds to whether or not the core
+ * filter system itself will cache the data), but we want to cache it always so
+ * we need to ignore that parameter.
+ */
+function _htmlpurifier_process($text, $filter, $format, $langcode, $cache) {
+  return _htmlpurifier_process_text($text, $filter, $format, $langcode, TRUE);
 }
 
 /**
@@ -198,16 +224,18 @@ function _htmlpurifier_add_css( &$field, $nid ) {
 
 
 
-// -- INTERNAL FUNCTIONS ---------------------------------------------------- //
-
 /**
  * Processes HTML according to a format and returns purified HTML. Makes a 
  * cache pass if possible.
  * 
  * @param string $text
  *    Text to purify
- * @param int $format
- *    Input format corresponding to HTML Purifier's configuration.
+ * @param object $filter
+ *   The filter object containing settings for the given format.
+ * @param object $format
+ *    The format object of the text to be filtered.
+ * @param string $langcode
+ *    The language code of the text to be filtered.
  * @param boolean $cache
  *    Whether or not to check the cache.
  * 
@@ -215,16 +243,16 @@ function _htmlpurifier_add_css( &$field, $nid ) {
  *    We ignore $delta because the only difference it makes is in the configuration
  *    screen.
  */
-function _htmlpurifier_process($text, $format, $cache = TRUE) {
+function _htmlpurifier_process_text($text, $filter, $format, $langcode, $cache = TRUE) {
   
   if ($cache) {
-    $cid = $format . ':' . md5($text);
+    $cid = $format->format . ':' . $langcode . ':' . hash('sha256', $text);
     $old = cache_get($cid, 'cache_htmlpurifier');
     if ($old) return $old->data;
   }
   
   _htmlpurifier_load();
-  $config = _htmlpurifier_get_config($format);
+  $config = _htmlpurifier_get_config($format->format);
 
   // If ExtractStyleBlocks is enabled, we'll need to do a bit more for CSSTidy
   $config_extractstyleblocks = $config->get('Filter.ExtractStyleBlocks');
@@ -277,14 +305,6 @@ function _htmlpurifier_load() {
     }
   }
 
-  if (version_compare(phpversion(), '5') < 0) {
-    // If your version of PHP is too old, you're going to fail anyway
-    // when you attempt to include the HTML Purifier library, so we
-    // might as well try to give a useful error message.
-    echo 'Your version of PHP is too old to run HTML Purifier, needs PHP 5 or later';
-    exit;
-  }
-
   require_once "$library_path/library/HTMLPurifier.auto.php";
   require_once "$module_path/HTMLPurifier_DefinitionCache_Drupal.php";
 
@@ -296,13 +316,14 @@ function _htmlpurifier_load() {
 }
 
 /**
- * Returns the HTMLPurifier_Config object corresponding to an input format.
+ * Returns the HTMLPurifier_Config object corresponding to a text format.
  * @param int $format
- *    Input format.
+ *    (Optional) Text format ID. If left empty, the default configuration is
+ *    returned.
  * @return
  *    Instance of HTMLPurifier_Config.
  */
-function _htmlpurifier_get_config($format) {
+function _htmlpurifier_get_config($format = 0) {
   
   $config = HTMLPurifier_Config::createDefault();
   
@@ -325,10 +346,25 @@ function _htmlpurifier_get_config($format) {
     $config->set('Attr.DefaultTextDir', 'rtl');
   }
   
-  if ($config_function = _htmlpurifier_config_load($format)) {
+  if ($format && ($config_function = _htmlpurifier_config_load($format))) {
     $config_function($config);
   } else {
-    $config_data = variable_get("htmlpurifier_config_$format", FALSE);
+    // We only support one instance of this module's filters (either basic or
+    // advanced) per text format, so choose the first settings we find.
+    // TODO: This is awkward, but the most straightforward conversion from the
+    // D6 version, which also treated this as a per-format setting and
+    // therefore had the same limitation.
+    $filters = $format ? filter_list_format($format) : array();
+    if (!empty($filters['htmlpurifier_advanced']->status) && isset($filters['htmlpurifier_advanced']->settings['htmlpurifier_config'])) {
+      $config_data = $filters['htmlpurifier_advanced']->settings['htmlpurifier_config'];
+    }
+    elseif (!empty($filters['htmlpurifier_basic']->status) && isset($filters['htmlpurifier_basic']->settings['htmlpurifier_config'])) {
+      $config_data = $filters['htmlpurifier_basic']->settings['htmlpurifier_config'];
+    }
+    else {
+      $config_data = FALSE;
+    }
+
     if (!empty($config_data['Filter.ExtractStyleBlocks'])) {
       if (!_htmlpurifier_load_csstidy()) {
         $config_data['Filter.ExtractStyleBlocks'] = '0';
@@ -373,7 +409,7 @@ function _htmlpurifier_load_csstidY() {
  *    String function name for format, or FALSE if none.
  */
 function _htmlpurifier_config_load($format) {
-  $config_file     = drupal_get_path('module', 'htmlpurifier') ."/config/$format.php";
+  $config_file = drupal_get_path('module', 'htmlpurifier') . "/config/$format.php";
   $config_function = "htmlpurifier_config_$format";
   if (
     !function_exists($config_function) &&
@@ -386,61 +422,57 @@ function _htmlpurifier_config_load($format) {
 
 /**
  * Generates a settings form for configuring HTML Purifier.
- * @param int $delta
- *    Whether or not to use advanced form (1) or not (0).
- * @param int $format
- *    Input format being configured.
+ *
+ * @param array $form
+ *   The prepopulated form array.
+ * @param array $form_state
+ *   The form state of the (entire) configuration form.
+ * @param object $filter
+ *   The filter object containing settings for the given format. $filter->name
+ *   can be either 'htmlpurifier_basic' or 'htmlpurifier_advanced' (the two
+ *   filters defined by this module).
+ * @param object $format
+ *   The format object being configured.
+ * @param array $defaults
+ *   The default settings for the filter, as defined in 'default settings' in
+ *   hook_filter_info().
+ *
  * @return
  *    Form API array.
  */
-function _htmlpurifier_settings($delta, $format) {
+function _htmlpurifier_settings($form, &$form_state, $filter, $format, $defaults) {
   _htmlpurifier_load();
   
   // Dry run, testing for errors:
-  _htmlpurifier_process('', $format, FALSE);
+  _htmlpurifier_process_text('', $filter, $format, LANGUAGE_NONE, FALSE);
   
   $module_path = drupal_get_path('module', 'htmlpurifier');
-  drupal_add_css("$module_path/config-form.css");
-  // Makes all configuration links open in new windows; can safe lots of grief!
-  drupal_add_js('$(function(){$(".hp-config a").click(function(){window.open(this.href);return false;});});', 'inline');
-  drupal_add_js(HTMLPurifier_Printer_ConfigForm::getJavaScript(), 'inline');
+
+  $settings = array();
   
-  $form = array();
-
-  $form['dashboard'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('HTML Purifier Dashboard'),
-    '#collapsible' => true,
-  );
-  $form['dashboard']["enter_hack"] = array(
-    // hack to make normal form submission when <ENTER> is pressed
-    '#value' => '<input type="submit" name="op" id="edit-submit" value="Save configuration"  class="form-submit" style="display:none;" />',
-  );
-  $form['dashboard']["htmlpurifier_clear_cache"] = array(
-    '#type' => 'submit',
-    '#value' => t('Clear cache (Warning: Can result in performance degradation)'),
-    '#submit' => array('_htmlpurifier_clear_cache')
-  );
-
-  $form['htmlpurifier'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('HTML Purifier'),
-    '#collapsible' => TRUE,
-  );
-  $form['htmlpurifier']["htmlpurifier_help_$format"] = array(
+  $settings['#attached']['css'][] = "$module_path/config-form.css";
+  $settings['#attached']['js'][] = "$module_path/config-form.js";
+  // TODO: This is broken. The JavaScript may need to be rewritten, or it may
+  // need to be added via more standard methods.
+  $settings['#attached']['js'][] = array(
+    'data' => HTMLPurifier_Printer_ConfigForm::getJavaScript(),
+    'type' => 'inline',
+   );
+  
+  $settings['htmlpurifier_help'] = array(
     '#type' => 'checkbox',
     '#title' => t('Display help text'),
-    '#default_value' => variable_get("htmlpurifier_help_$format", TRUE),
+    '#default_value' => isset($filter->settings['htmlpurifier_help']) ? $filter->settings['htmlpurifier_help'] : $defaults['htmlpurifier_help'],
     '#description' => t('If enabled, a short note will be added to the filter tips explaining that HTML will be transformed to conform with HTML standards. You may want to disable this option when the HTML Purifier is used to check the output of another filter like BBCode.'),
   );
-  if ($config_function = _htmlpurifier_config_load($format)) {
-    $form['htmlpurifier']['notice'] = array(
+  if ($config_function = _htmlpurifier_config_load($format->format)) {
+    $settings['notice'] = array(
       '#type' => 'markup',
       '#value' => t('<div>Configuration function <code>!function()</code> is already defined. To edit HTML Purifier\'s configuration, edit the corresponding configuration file, which is usually <code>htmlpurifier/config/!format.php</code>. To restore the web configuration form, delete or rename this file.</div>',
-        array('!function' => $config_function, '!format' => $format)),
+        array('!function' => $config_function, '!format' => $format->format)),
     );
   } else {
-    if ($delta == 0) {
+    if ($filter->name == 'htmlpurifier_basic') {
       $title = t('Configure HTML Purifier');
       $allowed = array(
         'URI.DisableExternalResources',
@@ -459,32 +491,26 @@ function _htmlpurifier_settings($delta, $format) {
     } else {
       $title = t('Advanced configuration options');
       $allowed = TRUE;
-      $form['htmlpurifier']["htmlpurifier_doublecache"] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Allow double caching'),
-        '#default_value' => variable_get("htmlpurifier_doublecache", FALSE),
-        '#description' => t('If enabled, HTML Purifier will tell filter that its output is cacheable. This is not usually necessary, because HTML Purifier maintains its own cache, but may be helpful if you have later filters that need to be cached. Warning: this applies to ALL filters, not just this one'),
-      );
     }
     
     $intro =
-        '<div class="form-item"><h3>'.
-        $title.
-        '</h3><div class="description">'.
-        t('Please click on a directive name for more information on what it does before enabling or changing anything!  Changes will not apply to old entries until you clear the cache (see the dashboard)').
+        '<div class="form-item"><h3>' .
+        $title .
+        '</h3><div class="description">' .
+        t('Please click on a directive name for more information on what it does before enabling or changing anything!  Changes will not apply to old entries until you clear the cache (see the <a href="@url">settings page</a>).', array('@url' => url('admin/config/content/htmlpurifier'))) .
         '</div></div>';
     
-    $config = _htmlpurifier_get_config($format);
+    $config = _htmlpurifier_get_config($format->format);
     $config_form = new HTMLPurifier_Printer_ConfigForm(
-      "htmlpurifier_config_$format", 'http://htmlpurifier.org/live/configdoc/plain.html#%s'
+      'htmlpurifier_config', 'http://htmlpurifier.org/live/configdoc/plain.html#%s'
     );
-    $form['htmlpurifier']["htmlpurifier_config_$format"] = array(
-      '#value' => $intro . $config_form->render($config, $allowed, FALSE),
+    $settings['htmlpurifier_config'] = array(
+      '#markup' => $intro . $config_form->render($config, $allowed, FALSE),
       '#after_build' => array('_htmlpurifier_config_hack'),
     );
   }
   
-  return $form;
+  return $settings;
 }
 
 /**
@@ -494,11 +520,19 @@ function _htmlpurifier_settings($delta, $format) {
  * @warning
  *    If someone ever gets the smart idea of changing the parameters to
  *    this function, I'm SOL! ;-)
+ *    Also, this function does not work correctly if both filters from this
+ *    module are enabled for the same format, since only one set of submitted
+ *    values will make it through.
  */
 function _htmlpurifier_config_hack($form_element, &$form_state) {
-  $key = $form_element['#parents'][0];
-  if (!empty($form_element['#post']) && isset($form_element['#post'][$key])) {
-    $form_state['values'][$key] = $form_element['#post'][$key];
+  $parents = $form_element['#parents'];
+  $key = end($parents);
+  if (isset($form_state['input'][$key])) {
+    $value = $form_state['input'][$key];
+    foreach (array_reverse($parents) as $parent) {
+      $value = array($parent => $value);
+    }
+    $form_state['values'] = array_merge_recursive($form_state['values'], $value);
   }
   foreach ($form_state['values'] as $i => $config_data) {
     if (!is_array($config_data)) continue;
@@ -517,7 +551,7 @@ function _htmlpurifier_config_hack($form_element, &$form_state) {
  * Clears the HTML Purifier internal Drupal cache.
  */
 function _htmlpurifier_clear_cache($form, &$form_state) {
-    drupal_set_message("Cache cleared");
-    db_query("DELETE FROM {cache_htmlpurifier}");
-    db_query("DELETE FROM {cache} WHERE cid LIKE '%s%%'", 'htmlpurifier:');
+  drupal_set_message(t('Cache cleared.'));
+  cache_clear_all('*', 'cache_htmlpurifier', TRUE);
+  cache_clear_all('htmlpurifier:', 'cache', TRUE);
 }

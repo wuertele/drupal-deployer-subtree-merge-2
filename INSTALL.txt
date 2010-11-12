@@ -45,11 +45,11 @@ and it's nice to have dom and iconv.
      Now you can safely upgrade your htmlpurifier module without
      having to re-deploy the HTML Purifier library.
          
-* Go to Administer > Site building > Modules and enable this module
+* Go to Administer > Modules and enable this module
 
-* You can now create a new input format or add the HTML Purifier to an 
-  existing input format. It is recommended that you place HTML Purifier as 
-  the last filter in the input format. Reorder the filters if necessary.
+* You can now create a new text format or add the HTML Purifier to an 
+  existing text format. It is recommended that you place HTML Purifier as 
+  the last filter in the text format. Reorder the filters if necessary.
 
 WARNING: Due to HTML Purifier's caching mechanism, dynamic filters MUST NOT
 be placed before HTML Purifier.
