@@ -301,6 +301,12 @@ function _htmlpurifier_load() {
     // move it over.  There is code for emitting errors in
     // htmlpurifier.install when this is the case.
     if (!file_exists("$library_path/library/HTMLPurifier.auto.php")) {
+      // Check for an alternate phrasing and error about it
+      if (file_exists("$library_path/HTMLPurifier.auto.php") &&
+         !file_exists("$module_path/library/HTMLPurifier.auto.php")) {
+         echo "HTML Purifier was installed improperly; move contents of folder $library_path to $library_path/library";
+         exit;
+      }
       $library_path = $module_path;
     }
   }
