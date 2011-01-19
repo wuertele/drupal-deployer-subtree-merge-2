@@ -454,8 +454,6 @@ function _htmlpurifier_settings($form, &$form_state, $filter, $format, $defaults
   
   $settings['#attached']['css'][] = "$module_path/config-form.css";
   $settings['#attached']['js'][] = "$module_path/config-form.js";
-  // TODO: This is broken. The JavaScript may need to be rewritten, or it may
-  // need to be added via more standard methods.
   $settings['#attached']['js'][] = array(
     'data' => HTMLPurifier_Printer_ConfigForm::getJavaScript(),
     'type' => 'inline',
