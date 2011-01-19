@@ -357,11 +357,11 @@ function _htmlpurifier_get_config($format = 0) {
     // D6 version, which also treated this as a per-format setting and
     // therefore had the same limitation.
     $filters = $format ? filter_list_format($format) : array();
-    if (!empty($filters['htmlpurifier_advanced']->status) && isset($filters['htmlpurifier_advanced']->settings['htmlpurifier_config'])) {
-      $config_data = $filters['htmlpurifier_advanced']->settings['htmlpurifier_config'];
+    if (!empty($filters['htmlpurifier_advanced']->status) && isset($filters['htmlpurifier_advanced']->settings['htmlpurifier_advanced_config'])) {
+      $config_data = $filters['htmlpurifier_advanced']->settings['htmlpurifier_advanced_config'];
     }
-    elseif (!empty($filters['htmlpurifier_basic']->status) && isset($filters['htmlpurifier_basic']->settings['htmlpurifier_config'])) {
-      $config_data = $filters['htmlpurifier_basic']->settings['htmlpurifier_config'];
+    elseif (!empty($filters['htmlpurifier_basic']->status) && isset($filters['htmlpurifier_basic']->settings['htmlpurifier_basic_config'])) {
+      $config_data = $filters['htmlpurifier_basic']->settings['htmlpurifier_basic_config'];
     }
     else {
       $config_data = FALSE;
@@ -504,9 +504,9 @@ function _htmlpurifier_settings($form, &$form_state, $filter, $format, $defaults
     
     $config = _htmlpurifier_get_config($format->format);
     $config_form = new HTMLPurifier_Printer_ConfigForm(
-      'htmlpurifier_config', 'http://htmlpurifier.org/live/configdoc/plain.html#%s'
+      $filter->name . '_config', 'http://htmlpurifier.org/live/configdoc/plain.html#%s'
     );
-    $settings['htmlpurifier_config'] = array(
+    $settings[$filter->name . '_config'] = array(
       '#markup' => $intro . $config_form->render($config, $allowed, FALSE),
       '#after_build' => array('_htmlpurifier_config_hack'),
     );
