@@ -557,3 +557,5 @@ function _htmlpurifier_clear_cache($form, &$form_state) {
   cache_clear_all('*', 'cache_htmlpurifier', TRUE);
   cache_clear_all('htmlpurifier:', 'cache', TRUE);
 }
+
+// vim: syntax=php

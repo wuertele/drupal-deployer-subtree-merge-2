@@ -230,3 +230,5 @@ function htmlpurifier_update_6201() {}
  */
 // function htmlpurifier_update_7000() {
 // }
+
+// vim: syntax=php
