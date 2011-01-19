@@ -315,7 +315,10 @@ function _htmlpurifier_load() {
   $factory->register('Drupal', 'HTMLPurifier_DefinitionCache_Drupal');
 
   // Register the version as a variable:
-  variable_set('htmlpurifier_version_ours', HTMLPurifier::VERSION);
+  $current_version = variable_get('htmlpurifier_version_ours', FALSE);
+  if ($current_version != HTMLPurifier::VERSION) {
+    variable_set('htmlpurifier_version_ours', HTMLPurifier::VERSION);
+  }
 }
 
 /**
