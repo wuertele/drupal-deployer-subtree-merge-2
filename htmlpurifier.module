@@ -336,10 +336,6 @@ function _htmlpurifier_get_config($format = 0) {
   $config->set('Core.AggressivelyFixLt', TRUE);
   $config->set('Cache.DefinitionImpl', 'Drupal');
   
-  // Filter HTML doesn't allow external images, so neither will we...
-  // for now. This can be configured off.
-  $config->set('URI.DisableExternalResources', TRUE);
-  
   if (!empty($_SERVER['SERVER_NAME'])) {
     // SERVER_NAME is more reliable than HTTP_HOST
     $config->set('URI.Host', $_SERVER['SERVER_NAME']);
