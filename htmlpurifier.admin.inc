@@ -22,13 +22,6 @@ function htmlpurifier_admin_settings($form, &$form_state) {
     '#submit' => array('_htmlpurifier_clear_cache')
   );
 
-  $form['htmlpurifier_doublecache'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Allow double caching'),
-    '#default_value' => FALSE,
-    '#description' => t('If enabled, HTML Purifier will tell the Filter module that its output is cacheable. This is not usually necessary, because HTML Purifier maintains its own cache, but may be helpful if you have later filters that need to be cached. Note: This applies to all text formats in which the HTML Purifier filters are included.'),
-  );
-
   $form = system_settings_form($form);
   $form['#submit'][] = 'htmlpurifier_admin_settings_submit';
   return $form;

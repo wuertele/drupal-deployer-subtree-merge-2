@@ -99,9 +99,6 @@ function htmlpurifier_filter_info() {
       'htmlpurifier_help' => TRUE,
     ),
     'tips callback' => '_htmlpurifier_filter_tips',
-    // Since HTML Purifier implements its own caching layer, having filter
-    // cache it again is wasteful. Returns TRUE if double caching is permitted.
-    'cache' => variable_get("htmlpurifier_doublecache", FALSE),
   );
   $filters['htmlpurifier_advanced'] = array(
     'title' => t('HTML Purifier (advanced)'),
