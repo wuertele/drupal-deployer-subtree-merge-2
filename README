@@ -101,8 +101,8 @@ git commit -m "Merge of currency"
 
 
 git remote add -f drupal.org/devel http://git.drupal.org/project/devel.git
-git merge -s ours --no-commit 2589ce3a5233952efb09f62698f6ff718b7d560c
-git read-tree --prefix=drupal-6.x/sites/all/modules/devel/ -u  2589ce3a5233952efb09f62698f6ff718b7d560c
+git merge -s ours --no-commit 9ab54a0ad0f13750f0b5d8056f41351987655e8d
+git read-tree --prefix=drupal-6.x/sites/all/modules/devel/ -u  9ab54a0ad0f13750f0b5d8056f41351987655e8d
 git commit -m "Merge of devel"
 
 
@@ -460,11 +460,11 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/views_rss/ -u b30b54cb7c9573
 git commit -m "Merge of views_rss"
 
 
-#git remote add -f drupal.org/webform http://git.drupal.org/project/webform.git
-#git merge -s ours --no-commit b59c80e3352a5d7f4d1b28a8894362a30bc88ed6
-#git read-tree --prefix=drupal-6.x/sites/all/modules/webform/ -u b59c80e3352a5d7f4d1b28a8894362a30bc88ed6
-#git commit -m "Merge of webform"
-#
+git remote add -f drupal.org/webform http://git.drupal.org/project/webform.git
+git merge -s ours --no-commit b59c80e3352a5d7f4d1b28a8894362a30bc88ed6
+git read-tree --prefix=drupal-6.x/sites/all/modules/webform/ -u b59c80e3352a5d7f4d1b28a8894362a30bc88ed6
+git commit -m "Merge of webform"
+
 
 git remote add -f drupal.org/xmlsitemap http://git.drupal.org/project/xmlsitemap.git
 git merge -s ours --no-commit 70ffd85ffe879daa101d631a858ec7f1cd841d53
@@ -472,29 +472,3 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/xmlsitemap/ -u 70ffd85ffe879
 git commit -m "Merge of xmlsitemap"
 
 
-pingback  
-project  
-project_issue  
-recipe  
-rest_server  
-robotstxt  
-search_files  
-seo_checklist  
-services  
-site_verify  
-tablefield  
-tabs  
-taxonomy_manager  
-text_noderef  
-textformatter  
-token  
-transliteration  
-units  
-unitsapi  
-user_register_notify  
-viewreference  
-views  
-views_rss  
-viewsdisplaytabs  
-webform  
-xmlsitemap  
