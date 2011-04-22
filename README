@@ -20,6 +20,8 @@ Advancing 6.19 to 6.20:
 
 Adding modules:
 
+mkdir -p drupal-6.x/sites/all/modules
+
 git remote add -f drupal.org/admin_menu http://git.drupal.org/project/admin_menu.git
 git merge -s ours --no-commit 18eb12b8d83767d3497942475e0290901c1ef008
 git read-tree --prefix=drupal-6.x/sites/all/modules/admin_menu/ -u 18eb12b8d83767d3497942475e0290901c1ef008
@@ -99,8 +101,8 @@ git commit -m "Merge of currency"
 
 
 git remote add -f drupal.org/devel http://git.drupal.org/project/devel.git
-git merge -s ours --no-commit ff56ee79f0a66aea1578aedf95447e922333f5bc
-git read-tree --prefix=drupal-6.x/sites/all/modules/devel/ -u  ff56ee79f0a66aea1578aedf95447e922333f5bc
+git merge -s ours --no-commit 2589ce3a5233952efb09f62698f6ff718b7d560c
+git read-tree --prefix=drupal-6.x/sites/all/modules/devel/ -u  2589ce3a5233952efb09f62698f6ff718b7d560c
 git commit -m "Merge of devel"
 
 
@@ -189,8 +191,8 @@ git commit -m "Merge of google_analytics"
 
 
 git remote add -f drupal.org/htmlpurifier http://git.drupal.org/project/htmlpurifier.git
-git merge -s ours --no-commit 30d9cdac5cd2883f2c64748946cfcc1fa38791b5
-git read-tree --prefix=drupal-6.x/sites/all/modules/htmlpurifier/ -u  30d9cdac5cd2883f2c64748946cfcc1fa38791b5
+git merge -s ours --no-commit 0ea9fdc3d4fda5805dc6d5918648c6027dce38f6
+git read-tree --prefix=drupal-6.x/sites/all/modules/htmlpurifier/ -u  0ea9fdc3d4fda5805dc6d5918648c6027dce38f6
 git commit -m "Merge of htmlpurifier"
 
 
