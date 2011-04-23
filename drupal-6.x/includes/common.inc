@@ -3445,6 +3445,8 @@ function drupal_schema_fields_sql($table, $prefix = NULL) {
  *   a new node.
  */
 function drupal_write_record($table, &$object, $update = array()) {
+  //drupal_set_message ("drupal_write_record(" . $table . ", " . serialize ($object));
+
   // Standardize $update to an array.
   if (is_string($update)) {
     $update = array($update);
