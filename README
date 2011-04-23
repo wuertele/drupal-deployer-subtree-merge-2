@@ -59,8 +59,8 @@ git commit -m "Merge of auto_nodetitle"
 
 
 git remote add -f drupal.org/cck http://git.drupal.org/project/cck.git
-git merge -s ours --no-commit f548f9974314fe70674e6004cbbb814bb1270978
-git read-tree --prefix=drupal-6.x/sites/all/modules/cck/ -u  f548f9974314fe70674e6004cbbb814bb1270978
+git merge -s ours --no-commit 5d44332bc62388b17e3f75990aa4bf22c028c6dd
+git read-tree --prefix=drupal-6.x/sites/all/modules/cck/ -u  5d44332bc62388b17e3f75990aa4bf22c028c6dd
 git commit -m "Merge of cck"
 
 
