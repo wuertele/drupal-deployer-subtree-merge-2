@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -53,12 +54,14 @@ function performance_schema() {
 }
 
 function performance_install() {
+  drupal_install_schema('performance');
 
   // Set the weight so this module runs last
   db_query("UPDATE {system} SET weight = 3000 WHERE name = 'performance'");
 }
 
 function performance_uninstall() {
+  drupal_uninstall_schema('performance');
   db_query("DELETE FROM {variable} WHERE name LIKE 'performance%'");
 }
 
@@ -74,11 +77,11 @@ function performance_requirements($phase) {
       'title'       => t('Performance logging details'),
       'value'       => 'Enabled',
       'severity'    => REQUIREMENT_WARNING,
-      'description' => t('Performance detailed logging is <a href="@link">enabled</a>. This can cause severe issues on live sites.', array('@link' => url('admin/config/development/performance_logging'))),
+      'description' => t('Performance detailed logging is <a href="@link">enabled</a>. This can cause severe issues on live sites.', array('@link' => url('admin/settings/performance_logging'))),
     );
   }
 
-  if (variable_get('devel_query_display', FALSE)) {
+  if (variable_get('dev_query', 0)) {
     if (variable_get('performance_detail', 0) ||
         variable_get('performance_summary_db', 0) ||
         variable_get('performance_summary_apc', 0)) {
@@ -86,7 +89,7 @@ function performance_requirements($phase) {
         'title'       => t('Performance logging query'),
         'value'       => 'Enabled',
         'severity'    => REQUIREMENT_WARNING,
-        'description' => t('Query timing and count logging is <a href="@link">enabled</a>. This can cause memory size per page to be larger than normal.', array('@link' => url('admin/config/development/performance_logging'))),
+        'description' => t('Query timing and count logging is <a href="@link">enabled</a>. This can cause memory size per page to be larger than normal.', array('@link' => url('admin/settings/performance_logging'))),
       );
     }
   }
@@ -131,15 +134,17 @@ function performance_update_2() {
  *
  * @return array
  */
-function performance_update_7001() {
+function performance_update_6001() {
   $int_field = array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'disp-width' => '11');
 
-  db_change_field('performance_summary', 'millisecs_max', 'ms_max', $int_field);
-  db_change_field('performance_summary', 'millisecs_avg', 'ms_avg', $int_field);
-  db_change_field('performance_detail',  'millisecs',     'ms',     $int_field);
+  $ret = array();
+  db_change_field($ret, 'performance_summary', 'millisecs_max', 'ms_max', $int_field);
+  db_change_field($ret, 'performance_summary', 'millisecs_avg', 'ms_avg', $int_field);
+  db_change_field($ret, 'performance_detail',  'millisecs',     'ms',     $int_field);
 
-  // We don't have a cache update method, so it's better to clear it
+  // We don't have a cache update method, so it's better to clear it 
   if (function_exists('apc_fetch')) {
     apc_clear_cache('user');
   }
+  return $ret;
 }
