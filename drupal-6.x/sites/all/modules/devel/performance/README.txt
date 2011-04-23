@@ -1,3 +1,4 @@
+$Id$
 
 By Khalid Baheyeldin
 
@@ -45,7 +46,7 @@ Only summary logging with Memcache or APC are recommended mode for live sites, w
 
 Note on Completeness:
 ---------------------
-Please note that when summary logging to APC or Memcache, the data captured in the summary will
+Please note that when summary logging to APC or Memcache, the data captured in the summary will 
 not be comprehensive reflecting every single page view for every URL.
 
 The reason for this is that there is no atomic locking when updating the data structures that
@@ -55,7 +56,7 @@ This means that the values you get when using these storage caches are only samp
 miss some page views, depending on how busy the site is.
 
 For memcache, there is way to implement locking using the $mc->increment and/or $mc->add as well.
-However, there is a risk if these are implemented, that there will be less concurrency and we 
+However, there is a risk if these are implemented, that there will be less concurrency and we
 can cause a site to slow down.
 
 Configuration:

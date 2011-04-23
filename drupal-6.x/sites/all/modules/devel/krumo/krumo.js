@@ -1,6 +1,7 @@
 /**
 * JavaScript routines for Krumo
 *
+* @version $Id$
 * @link http://sourceforge.net/projects/krumo
 */
 
