@@ -100,9 +100,10 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/currency/ -u  f0c443ca4dab3e
 git commit -m "Merge of currency"
 
 
+git fetch --tags --verbose --progress drupal.org/devel
 git remote add -f drupal.org/devel http://git.drupal.org/project/devel.git
-git merge -s ours --no-commit 9ab54a0ad0f13750f0b5d8056f41351987655e8d
-git read-tree --prefix=drupal-6.x/sites/all/modules/devel/ -u  9ab54a0ad0f13750f0b5d8056f41351987655e8d
+git merge -s ours --no-commit ff56ee79f0a66aea1578aedf95447e922333f5bc
+git read-tree --prefix=drupal-6.x/sites/all/modules/devel/ -u  ff56ee79f0a66aea1578aedf95447e922333f5bc
 git commit -m "Merge of devel"
 
 

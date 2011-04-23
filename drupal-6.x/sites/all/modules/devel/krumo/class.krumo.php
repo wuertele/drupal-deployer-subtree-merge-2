@@ -2,7 +2,7 @@
 /**
 * Krumo: Structured information display solution
 *
-* Krumo is a debugging tool (PHP5 only), which displays structured information 
+* Krumo is a debugging tool (PHP4/PHP5), which displays structured information 
 * about any PHP variable. It is a nice replacement for print_r() or var_dump() 
 * which are used by a lot of PHP developers. 
 *
@@ -10,6 +10,7 @@
 * @license http://opensource.org/licenses/lgpl-license.php GNU Lesser General Public License Version 2.1
 *
 * @package Krumo
+* @version $Id$
 */
 
 //////////////////////////////////////////////////////////////////////////////
@@ -66,8 +67,8 @@ Class krumo {
 	* @access public
 	* @static
 	*/
-	Public Static Function version() {
-		return '0.2.1a';
+	Function version() {
+		return '0.2a';
 		}
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
@@ -78,7 +79,7 @@ Class krumo {
 	* @access public
 	* @static
 	*/
-	Public Static Function backtrace() {
+	Function backtrace() {
 
 		// disabled ?
 		//
@@ -97,7 +98,7 @@ Class krumo {
 	* @access public
 	* @static
 	*/
-	Public Static Function classes() {
+	Function classes() {
 
 		// disabled ?
 		//
@@ -121,7 +122,7 @@ This is a list of all currently declared classes.
 	* @access public
 	* @static
 	*/
-	Public Static Function interfaces() {
+	Function interfaces() {
 
 		// disabled ?
 		//
@@ -145,7 +146,7 @@ This is a list of all currently declared interfaces.
 	* @access public
 	* @static
 	*/
-	Public Static Function includes() {
+	Function includes() {
 
 		// disabled ?
 		//
@@ -169,7 +170,7 @@ This is a list of all currently included (or required) files.
 	* @access public
 	* @static
 	*/
-	Public Static Function functions() {
+	Function functions() {
 
 		// disabled ?
 		//
@@ -193,7 +194,7 @@ This is a list of all currently declared functions.
 	* @access public
 	* @static
 	*/
-	Public Static Function defines() {
+	Function defines() {
 
 		// disabled ?
 		//
@@ -217,7 +218,7 @@ This is a list of all currently declared constants (defines).
 	* @access public
 	* @static
 	*/
-	Public Static Function extensions() {
+	Function extensions() {
 
 		// disabled ?
 		//
@@ -241,7 +242,7 @@ This is a list of all currently loaded PHP extensions.
 	* @access public
 	* @static
 	*/
-	Public Static Function headers() {
+	Function headers() {
 
 		// disabled ?
 		//
@@ -265,15 +266,11 @@ This is a list of all HTTP request headers.
 	* @access public
 	* @static
 	*/
-	Public Static Function phpini() {
+	Function phpini() {
 
 		// disabled ?
 		//
 		if (!krumo::_debug()) {
-			return false;
-			}
-
-		if (!readable(get_cfg_var('cfg_file_path'))) {
 			return false;
 			}
 
@@ -293,7 +290,7 @@ This is a list of the configuration settings read from <code><b><?php echo get_c
 	* @access public
 	* @static
 	*/
-	Public Static Function conf() {
+	Function conf() {
 
 		// disabled ?
 		//
@@ -317,7 +314,7 @@ This is a list of all your configuration settings.
 	* @access public
 	* @static
 	*/
-	Public Static Function path() {
+	Function path() {
 
 		// disabled ?
 		//
@@ -341,7 +338,7 @@ This is a list of the specified directories under your <code><b>include_path</b>
 	* @access public
 	* @static
 	*/
-	Public Static Function request() {
+	Function request() {
 
 		// disabled ?
 		//
@@ -365,7 +362,7 @@ This is a list of all the values from the <code><b>$_REQUEST</b></code> array.
 	* @access public
 	* @static
 	*/
-	Public Static Function get() {
+	Function get() {
 
 		// disabled ?
 		//
@@ -389,7 +386,7 @@ This is a list of all the values from the <code><b>$_GET</b></code> array.
 	* @access public
 	* @static
 	*/
-	Public Static Function post() {
+	Function post() {
 
 		// disabled ?
 		//
@@ -413,7 +410,7 @@ This is a list of all the values from the <code><b>$_POST</b></code> array.
 	* @access public
 	* @static
 	*/
-	Public Static Function server() {
+	Function server() {
 
 		// disabled ?
 		//
@@ -437,7 +434,7 @@ This is a list of all the values from the <code><b>$_SERVER</b></code> array.
 	* @access public
 	* @static
 	*/
-	Public Static Function cookie() {
+	Function cookie() {
 
 		// disabled ?
 		//
@@ -461,7 +458,7 @@ This is a list of all the values from the <code><b>$_COOKIE</b></code> array.
 	* @access public
 	* @static
 	*/
-	Public Static Function env() {
+	Function env() {
 
 		// disabled ?
 		//
@@ -485,7 +482,7 @@ This is a list of all the values from the <code><b>$_ENV</b></code> array.
 	* @access public
 	* @static
 	*/
-	Public Static Function session() {
+	Function session() {
 
 		// disabled ?
 		//
@@ -511,7 +508,7 @@ This is a list of all the values from the <code><b>$_SESSION</b></code> array.
 	* @access public
 	* @static
 	*/
-	Public Static Function ini($ini_file) {
+	Function ini($ini_file) {
 
 		// disabled ?
 		//
@@ -544,7 +541,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access public
 	* @static
 	*/
-	Public Static Function dump($data) {
+	Function dump($data) {
 
 		// disabled ?
 		//
@@ -567,17 +564,18 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 		krumo::_css();
 
 		// find caller
+		
 		// DEVEL: we added array_reverse() so the proper file+line number is found.
 		$_ = array_reverse(debug_backtrace());
 		while($d = array_pop($_)) {
 			// DEVEL: changed if() condition below
 			if ((strpos(@$d['file'], 'devel') === FALSE) && (strpos(@$d['file'], 'krumo') === FALSE) && @$d['class'] != 'krumo') {
 				break;
-				}
 			}
+		}
 
 		// the content
-		// DEVEL: we add an ltr here.
+		//
 		?>
 <div class="krumo-root" dir="ltr">
 	<ul class="krumo-node krumo-first">
@@ -602,15 +600,15 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 		// flee the hive
 		//
 		$_recursion_marker = krumo::_marker();
-		if ($hive =& krumo::_hive($dummy)) {
-			foreach($hive as $i=>$bee){
-				if (is_object($bee)) {
-					unset($hive[$i]->$_recursion_marker);
-					} else {
-					unset($hive[$i][$_recursion_marker]);
-					}
+    if ($hive =& krumo::_hive($dummy)) {
+		  foreach($hive as $i=>$bee){
+			  if (is_object($bee)) {
+				  unset($hive[$i]->$_recursion_marker);
+				} else {
+				  unset($hive[$i][$_recursion_marker]);
 				}
 			}
+    }
 
 		// PHP 4.x.x array reference bug...
 		//
@@ -622,45 +620,13 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 
 	/**
-	* Returns values from Krumo's configuration
-	*
-	* @param string $group
-	* @param string $name
-	* @param mixed $fallback
-	* @return mixed
-	*
-	* @access private
-	* @static
-	*/
-	Private Static Function _config($group, $name, $fallback=null) {
-		
-		static $_config = array();
-		
-		// not loaded ?
-		//
-		if (empty($_config)) {
-			$_config = (array) @parse_ini_file(
-				KRUMO_DIR . 'krumo.ini',
-				true);
-			}
-		
-		// exists ?
-		//
-		return (isset($_config[$group][$name]))
-			? $_config[$group][$name]
-			: $fallback;
-		}
-
-	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-
-	/**
 	* Print the skin (CSS)
 	*
 	* @return boolean
 	* @access private
 	* @static
 	*/
-	Private Static Function _css() {
+	Function _css() {
 		
 		static $_css = false;
 		
@@ -671,6 +637,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 			}
 		
 		$css = '';
+		
 		// DEVEL: changed for Drupal variables system
 		$skin = variable_get('devel_krumo_skin', 'orange');
 		
@@ -696,8 +663,9 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 			
 			// fix the urls
 			//
+			
 			// DEVEL: changed for Drupal path system.
-			$css_url = file_create_url(drupal_get_path('module', 'devel') . "/krumo/skins/{$skin}/");
+			$css_url = base_path() . drupal_get_path('module', 'devel') . "/krumo/skins/{$skin}/";
 			
 			$css = preg_replace('~%url%~Uis', $css_url, $css);
 			
@@ -736,7 +704,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access public
 	* @static
 	*/
-	Public Static Function enable() {
+	Function enable() {
 		return true === krumo::_debug(true);
 		}
 
@@ -747,7 +715,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access public
 	* @static
 	*/
-	Public Static Function disable() {
+	Function disable() {
 		return false === krumo::_debug(false);
 		}
 	
@@ -759,7 +727,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _debug($state=null) {
+	Function _debug($state=null) {
 		
 		static $_ = true;
 		
@@ -784,7 +752,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _dump(&$data, $name='...') {
+	Function _dump(&$data, $name='...') {
 
 		// object ?
 		//
@@ -863,7 +831,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _null($name) {
+	Function _null($name) {
 ?>
 <li class="krumo-child">
 	<div class="krumo-element"
@@ -887,7 +855,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _marker() {
+	Function _marker() {
 		
 		static $_recursion_marker;
 		if (!isset($_recursion_marker)) {
@@ -909,7 +877,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function &_hive(&$bee) {
+	Function &_hive(&$bee) {
 		
 		static $_ = array();
 
@@ -941,7 +909,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _vars(&$data) {
+	Function _vars(&$data) {
 
 		$_is_object = is_object($data);
 		
@@ -995,6 +963,12 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 			$v =& $data[$k];
 			}
 
+		// PHP 4.x.x array reference bug...
+		//
+		if (is_array($data) && version_compare(PHP_VERSION, "5", "<")) {
+			$GLOBALS[krumo::_marker()][] =& $v; 
+			}
+
 		krumo::_dump($v,$k);
 		} ?>
 	</ul>
@@ -1010,7 +984,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _recursion() {
+	Function _recursion() {
 ?>
 <div class="krumo-nest" style="display:none;">
 	<ul class="krumo-node">
@@ -1038,7 +1012,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _array(&$data, $name) {
+	Function _array(&$data, $name) {
 ?>
 <li class="krumo-child">
 	
@@ -1089,7 +1063,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _object(&$data, $name) {
+	Function _object(&$data, $name) {
 ?>
 <li class="krumo-child">
 
@@ -1120,7 +1094,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _resource($data, $name) {
+	Function _resource($data, $name) {
 ?>
 <li class="krumo-child">
 
@@ -1147,7 +1121,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _boolean($data, $name) {
+	Function _boolean($data, $name) {
 ?>
 <li class="krumo-child">
 
@@ -1174,7 +1148,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _integer($data, $name) {
+	Function _integer($data, $name) {
 ?>
 <li class="krumo-child">
 
@@ -1201,7 +1175,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _float($data, $name) {
+	Function _float($data, $name) {
 ?>
 <li class="krumo-child">
 
@@ -1228,7 +1202,7 @@ This is a list of all the values from the <code><b><?php echo realpath($ini_file
 	* @access private
 	* @static
 	*/
-	Private Static Function _string($data, $name) {
+	Function _string($data, $name) {
 
 		// extra ?
 		//
