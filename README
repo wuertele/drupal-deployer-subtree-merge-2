@@ -130,6 +130,10 @@ git merge -s ours --no-commit a473473f7257628c4428e9e4ffa4de55b91f8adf
 git read-tree --prefix=drupal-6.x/sites/all/modules/fbconnect/ -u  a473473f7257628c4428e9e4ffa4de55b91f8adf
 git commit -m "Merge of fbconnect"
 
+git remote add -f facebook-php-sdk http://github.com/facebook/php-sdk.git
+git merge -s ours --no-commit b14edfa34306e3f112d73fd72e73cf72f473c3d5
+git read-tree --prefix=drupal-6.x/sites/all/modules/fbconnect/facebook-php-sdk/ -u b14edfa34306e3f112d73fd72e73cf72f473c3d5
+git commit -m "Merge of facebook-php-sdk"
 
 git remote add -f drupal.org/fckeditor http://git.drupal.org/project/fckeditor.git
 git merge -s ours --no-commit 65f2f71f6a5223ad7ed00795aff6971cc3926c8e
