@@ -190,8 +190,8 @@ git commit -m "Merge of globalredirect"
 
 
 git remote add -f drupal.org/google_analytics http://git.drupal.org/project/google_analytics.git
-git merge -s ours --no-commit 406d3eb8d8d6144ebbfafcb1f0caabc8cde61758
-git read-tree --prefix=drupal-6.x/sites/all/modules/google_analytics/ -u  406d3eb8d8d6144ebbfafcb1f0caabc8cde61758
+git merge -s ours --no-commit bfe2bdd3b7b29f83ef278aca48de5712460ad5eb
+git read-tree --prefix=drupal-6.x/sites/all/modules/google_analytics/ -u  bfe2bdd3b7b29f83ef278aca48de5712460ad5eb
 git commit -m "Merge of google_analytics"
 
 
