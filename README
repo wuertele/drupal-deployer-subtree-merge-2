@@ -196,11 +196,17 @@ git commit -m "Merge of google_analytics"
 
 
 git remote add -f drupal.org/htmlpurifier http://git.drupal.org/project/htmlpurifier.git
-git merge -s ours --no-commit 0ea9fdc3d4fda5805dc6d5918648c6027dce38f6
-git read-tree --prefix=drupal-6.x/sites/all/modules/htmlpurifier/ -u  0ea9fdc3d4fda5805dc6d5918648c6027dce38f6
+git merge -s ours --no-commit 30d9cdac5cd2883f2c64748946cfcc1fa38791b5
+git read-tree --prefix=drupal-6.x/sites/all/modules/htmlpurifier/ -u  30d9cdac5cd2883f2c64748946cfcc1fa38791b5
 git commit -m "Merge of htmlpurifier"
 
+git checkout patches
+git remote add -f htmlpurifier.org git://repo.or.cz/htmlpurifier.git
+git merge -s ours --no-commit 18e538317a877a0509ae71a860429c41770da230
+git read-tree --prefix=drupal-6.x/sites/all/modules/htmlpurifier/library/ -u 213dfe955bb7ca84d8874d7fcebdaf5ed2bb5853
+git commit -m "Merge of htmlpurifier/library"
 
+git checkout drupal
 git remote add -f drupal.org/image http://git.drupal.org/project/image.git
 git merge -s ours --no-commit d900d7f90711c5f00b6d6b0a388559d03c87b28a
 git read-tree --prefix=drupal-6.x/sites/all/modules/image/ -u  d900d7f90711c5f00b6d6b0a388559d03c87b28a
