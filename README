@@ -1,5 +1,29 @@
 Drupal Website Deployer Repository (subtree merge strategy)
 
+Proposed Branch Workflow:
+
+drupal:	 subtree merges of git archives hosted on drupal.org.
+	 merge commits into patches and site-config
+
+patches:  based on branch drupal.  third-party patches of git software.
+	  merge commits into devel
+
+devel:  based on branch patches.  local packages under development.
+	merge commits into deploy
+
+site-config:  based on branch drupal.  local site configuration files.
+	      merge commits into site-data
+
+site-data:  based on branch site-config.  local site data files.
+	    merge commits into deploy
+
+host-config:  files needed by webhost.
+	      merge commits into deploy
+
+deploy:  based on merges from host-config, site-data, and devel.
+	 tag releases and synchronize on-line site from releases
+
+
 Getting to 6.19:
 
 git remote add -f drupal.org http://git.drupal.org/project/drupal.git
@@ -316,8 +340,8 @@ git commit -m "Merge of panels_tabs"
 
 
 git remote add -f drupal.org/pathauto http://git.drupal.org/project/pathauto.git
-git merge -s ours --no-commit acf1ccea484056cd54e80039fdc14d3ca9ee3384
-git read-tree --prefix=drupal-6.x/sites/all/modules/pathauto/ -u  acf1ccea484056cd54e80039fdc14d3ca9ee3384
+git merge -s ours --no-commit 6395f3187dec5c7fa84d79117518c13449a21a4b
+git read-tree --prefix=drupal-6.x/sites/all/modules/pathauto/ -u  6395f3187dec5c7fa84d79117518c13449a21a4b
 git commit -m "Merge of pathauto"
 
 
@@ -481,6 +505,10 @@ git remote add -f drupal.org/xmlsitemap http://git.drupal.org/project/xmlsitemap
 git merge -s ours --no-commit 70ffd85ffe879daa101d631a858ec7f1cd841d53
 git read-tree --prefix=drupal-6.x/sites/all/modules/xmlsitemap/ -u 70ffd85ffe879daa101d631a858ec7f1cd841d53
 git commit -m "Merge of xmlsitemap"
+
+git checkout mangle
+cp -r ~/filezilla/modules/dev/onthisdate drupal-6.x/sites/all/modules
+git commit -am "dave's module tutorial work"
 
 
 TODO:
