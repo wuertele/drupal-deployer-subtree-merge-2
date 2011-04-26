@@ -340,8 +340,8 @@ git commit -m "Merge of panels_tabs"
 
 
 git remote add -f drupal.org/pathauto http://git.drupal.org/project/pathauto.git
-git merge -s ours --no-commit acf1ccea484056cd54e80039fdc14d3ca9ee3384
-git read-tree --prefix=drupal-6.x/sites/all/modules/pathauto/ -u  acf1ccea484056cd54e80039fdc14d3ca9ee3384
+git merge -s ours --no-commit 6395f3187dec5c7fa84d79117518c13449a21a4b
+git read-tree --prefix=drupal-6.x/sites/all/modules/pathauto/ -u  6395f3187dec5c7fa84d79117518c13449a21a4b
 git commit -m "Merge of pathauto"
 
 
