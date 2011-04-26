@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 EXPECTED_ARGS=1
 E_BADARGS=65
@@ -19,7 +19,7 @@ cd $REPOSITORY
 git init
 
 touch README
-git echo "Drupal Website Deployer Repository (subtree merge strategy), scriptified scratchbuild" > README
+echo "Drupal Website Deployer Repository (subtree merge strategy), scriptified scratchbuild" > README
 cp $SCRIPT ./scratchbuild
 cp ${SCRIPT_PATH}/add-remotes ./add-remotes
 git add README scratchbuild add-remotes
