@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -54,12 +55,13 @@ function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
   $element = array(
     '#type' => $component['type'],
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#collapsible' => $component['extra']['collapsible'],
     '#collapsed' => $component['extra']['collapsed'],
-    '#attributes' => array('class' => array('webform-component-' . $component['type']), 'id' => 'webform-component-' . $component['form_key']),
-    '#pre_render' => array('webform_fieldset_prerender'),
+    '#attributes' => array('class' => 'webform-component-' . $component['type']),
+    '#pre_render' => array('webform_fieldset_prerender', 'webform_element_title_display'),
     '#webform_component' => $component,
   );
 
@@ -82,6 +84,7 @@ function _webform_display_fieldset($component, $value, $format = 'html') {
     $element = array(
       '#title' => $component['name'],
       '#weight' => $component['weight'],
+      '#post_render' => array('webform_element_wrapper'),
       '#theme_wrappers' => array('webform_element_text'),
     );
   }

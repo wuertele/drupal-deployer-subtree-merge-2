@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -16,4 +17,4 @@
  */
 ?>
 
-<?php print drupal_render_children($renderable); ?>
+<?php print drupal_render($renderable); ?>
