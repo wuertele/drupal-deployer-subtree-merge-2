@@ -412,8 +412,8 @@ git commit -m "Merge of site_verify"
 
 
 git remote add -f drupal.org/tablefield http://git.drupal.org/project/tablefield.git
-git merge -s ours --no-commit be09f99a16832bfcc18f0372a1d04833b3f31dc1
-git read-tree --prefix=drupal-6.x/sites/all/modules/tablefield/ -u be09f99a16832bfcc18f0372a1d04833b3f31dc1
+git merge -s ours --no-commit 40c54a58fa46410527a70ac1676e57bab8ed262d
+git read-tree --prefix=drupal-6.x/sites/all/modules/tablefield/ -u 40c54a58fa46410527a70ac1676e57bab8ed262d
 git commit -m "Merge of tablefield"
 
 
