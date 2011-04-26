@@ -443,8 +443,9 @@ git commit -m "Merge of text_noderef"
 
 
 git remote add -f drupal.org/token http://git.drupal.org/project/token.git
-git merge -s ours --no-commit c7d877c1b1e4f0d7b66430226a74dfefa33d7290
-git read-tree --prefix=drupal-6.x/sites/all/modules/token/ -u c7d877c1b1e4f0d7b66430226a74dfefa33d7290
+git fetch --tags --verbose --progress drupal.org/token
+git merge -s ours --no-commit f351e17b1c8b168d1151bac280ab6b10b46019ca
+git read-tree --prefix=drupal-6.x/sites/all/modules/token/ -u f351e17b1c8b168d1151bac280ab6b10b46019ca
 git commit -m "Merge of token"
 
 
