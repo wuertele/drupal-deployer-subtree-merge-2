@@ -469,7 +469,7 @@ git commit -m "Merge of unitsapi"
 
 git remote add -f drupal.org/user_register_notify http://git.drupal.org/project/user_register_notify.git
 git merge -s ours --no-commit d5ee0092aca9677ec3eeacf9cd8b864668b371b3
-git read-tree --prefix=drupal-6.x/sites/all/modules/user_register_notify/ -u d5ee0092aca9677ec3eeacf9cd8b864668b371b3fy
+git read-tree --prefix=drupal-6.x/sites/all/modules/user_register_notify/ -u d5ee0092aca9677ec3eeacf9cd8b864668b371b3
 git commit -m "Merge of user_register_notify"
 
 
