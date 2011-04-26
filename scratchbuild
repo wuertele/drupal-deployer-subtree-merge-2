@@ -296,8 +296,8 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/panels_tabs/ -u  f01db87c035
 git commit -m "Merge of panels_tabs"
 
 
-git merge -s ours --no-commit acf1ccea484056cd54e80039fdc14d3ca9ee3384
-git read-tree --prefix=drupal-6.x/sites/all/modules/pathauto/ -u  acf1ccea484056cd54e80039fdc14d3ca9ee3384
+git merge -s ours --no-commit 6395f3187dec5c7fa84d79117518c13449a21a4b
+git read-tree --prefix=drupal-6.x/sites/all/modules/pathauto/ -u  6395f3187dec5c7fa84d79117518c13449a21a4b
 git commit -m "Merge of pathauto"
 
 
@@ -356,13 +356,14 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/site_verify/ -u 898124aead60
 git commit -m "Merge of site_verify"
 
 
-git merge -s ours --no-commit be09f99a16832bfcc18f0372a1d04833b3f31dc1
-git read-tree --prefix=drupal-6.x/sites/all/modules/tablefield/ -u be09f99a16832bfcc18f0372a1d04833b3f31dc1
+git merge -s ours --no-commit 40c54a58fa46410527a70ac1676e57bab8ed262d
+git read-tree --prefix=drupal-6.x/sites/all/modules/tablefield/ -u 40c54a58fa46410527a70ac1676e57bab8ed262d
 git commit -m "Merge of tablefield"
 
 
-git merge -s ours --no-commit 204e807eca8ed11510caf3b30720833902065541
-git read-tree --prefix=drupal-6.x/sites/all/modules/tabs/ -u 204e807eca8ed11510caf3b30720833902065541
+git fetch --tags --verbose --progress drupal.org/tabs
+git merge -s ours --no-commit 7d6b2ba32d94075b3f881db500fff6aec73a9cf7
+git read-tree --prefix=drupal-6.x/sites/all/modules/tabs/ -u 7d6b2ba32d94075b3f881db500fff6aec73a9cf7
 git commit -m "Merge of tabs"
 
 
@@ -381,8 +382,9 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/text_noderef/ -u 5ba1c3930e3
 git commit -m "Merge of text_noderef"
 
 
-git merge -s ours --no-commit c7d877c1b1e4f0d7b66430226a74dfefa33d7290
-git read-tree --prefix=drupal-6.x/sites/all/modules/token/ -u c7d877c1b1e4f0d7b66430226a74dfefa33d7290
+git fetch --tags --verbose --progress drupal.org/token
+git merge -s ours --no-commit f351e17b1c8b168d1151bac280ab6b10b46019ca
+git read-tree --prefix=drupal-6.x/sites/all/modules/token/ -u f351e17b1c8b168d1151bac280ab6b10b46019ca
 git commit -m "Merge of token"
 
 
@@ -402,7 +404,7 @@ git commit -m "Merge of unitsapi"
 
 
 git merge -s ours --no-commit d5ee0092aca9677ec3eeacf9cd8b864668b371b3
-git read-tree --prefix=drupal-6.x/sites/all/modules/user_register_notify/ -u d5ee0092aca9677ec3eeacf9cd8b864668b371b3fy
+git read-tree --prefix=drupal-6.x/sites/all/modules/user_register_notify/ -u d5ee0092aca9677ec3eeacf9cd8b864668b371b3
 git commit -m "Merge of user_register_notify"
 
 
@@ -411,8 +413,8 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/viewreference/ -u 28b4ff175e
 git commit -m "Merge of viewreference"
 
 
-git merge -s ours --no-commit 429d3608a94b0a2436c7cd60062ecc8d36e67061
-git read-tree --prefix=drupal-6.x/sites/all/modules/views/ -u 429d3608a94b0a2436c7cd60062ecc8d36e67061
+git merge -s ours --no-commit 42fe4029ca7d7410f15933032a17e979bb0957c4
+git read-tree --prefix=drupal-6.x/sites/all/modules/views/ -u 42fe4029ca7d7410f15933032a17e979bb0957c4
 git commit -m "Merge of views"
 
 
@@ -426,14 +428,32 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/views_rss/ -u b30b54cb7c9573
 git commit -m "Merge of views_rss"
 
 
-git merge -s ours --no-commit b59c80e3352a5d7f4d1b28a8894362a30bc88ed6
-git read-tree --prefix=drupal-6.x/sites/all/modules/webform/ -u b59c80e3352a5d7f4d1b28a8894362a30bc88ed6
+git fetch --tags --verbose --progress drupal.org/webform
+git merge -s ours --no-commit 157eb01f8eb9e96b19627f1abe1fca50a06393d6
+git read-tree --prefix=drupal-6.x/sites/all/modules/webform/ -u 157eb01f8eb9e96b19627f1abe1fca50a06393d6
 git commit -m "Merge of webform"
 
 
 git merge -s ours --no-commit 70ffd85ffe879daa101d631a858ec7f1cd841d53
 git read-tree --prefix=drupal-6.x/sites/all/modules/xmlsitemap/ -u 70ffd85ffe879daa101d631a858ec7f1cd841d53
 git commit -m "Merge of xmlsitemap"
+
+git remote add -f drupal.org/ifeeldirty http://git.drupal.org/project/ifeeldirty.git
+git merge -s ours --no-commit 20127b2b8250cf7c73f7b6ca8839f3b497f1a269
+git read-tree --prefix=drupal-6.x/sites/all/themes/ifeeldirty/ -u 20127b2b8250cf7c73f7b6ca8839f3b497f1a269
+git commit -m "Merge of ifeeldirty"
+
+git remote add -f drupal.org/minimalist http://git.drupal.org/project/minimalist.git
+git fetch --tags --verbose --progress drupal.org/minimalist
+git merge -s ours --no-commit 245ded7dc0c2b24d2e6207efaf6f6e946fa1bd08
+git read-tree --prefix=drupal-6.x/sites/all/themes/minimalist/ -u 245ded7dc0c2b24d2e6207efaf6f6e946fa1bd08
+git commit -m "Merge of minimalist"
+
+git remote add -f drupal.org/pixture_reloaded http://git.drupal.org/project/pixture_reloaded.git
+git merge -s ours --no-commit ce6fa1f68eb70cca59abfb7780de8573b54091cf
+git read-tree --prefix=drupal-6.x/sites/all/themes/pixture_reloaded/ -u ce6fa1f68eb70cca59abfb7780de8573b54091cf
+git commit -m "Merge of pixture_reloaded"
+
 
 #git checkout mangle
 #cp -r ~/filezilla/modules/dev/onthisdate drupal-6.x/sites/all/modules
