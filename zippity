@@ -1,0 +1,11 @@
+#!/bin/sh
+
+git checkout patches
+git merge drupal
+git checkout devel
+git merge patches
+git checkout site-config
+git merge devel
+git checkout mangle
+git merge site-config
+git checkout drupal
