@@ -498,8 +498,8 @@ git commit -m "Merge of views_rss"
 
 
 git remote add -f drupal.org/webform http://git.drupal.org/project/webform.git
-git merge -s ours --no-commit b59c80e3352a5d7f4d1b28a8894362a30bc88ed6
-git read-tree --prefix=drupal-6.x/sites/all/modules/webform/ -u b59c80e3352a5d7f4d1b28a8894362a30bc88ed6
+git merge -s ours --no-commit 157eb01f8eb9e96b19627f1abe1fca50a06393d6
+git read-tree --prefix=drupal-6.x/sites/all/modules/webform/ -u 157eb01f8eb9e96b19627f1abe1fca50a06393d6
 git commit -m "Merge of webform"
 
 
