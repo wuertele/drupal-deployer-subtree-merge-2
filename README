@@ -418,8 +418,8 @@ git commit -m "Merge of tablefield"
 
 
 git remote add -f drupal.org/tabs http://git.drupal.org/project/tabs.git
-git merge -s ours --no-commit 204e807eca8ed11510caf3b30720833902065541
-git read-tree --prefix=drupal-6.x/sites/all/modules/tabs/ -u 204e807eca8ed11510caf3b30720833902065541
+git merge -s ours --no-commit 7d6b2ba32d94075b3f881db500fff6aec73a9cf7
+git read-tree --prefix=drupal-6.x/sites/all/modules/tabs/ -u 7d6b2ba32d94075b3f881db500fff6aec73a9cf7
 git commit -m "Merge of tabs"
 
 
