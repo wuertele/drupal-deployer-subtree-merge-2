@@ -113,3 +113,4 @@ Note that the contents of this template are used not only for display of
 submissions in the Webform interface but also in e-mails when printing out
 the %email_values token.
 
+$Id$

@@ -1,3 +1,4 @@
+// $Id$
 
 /**
  * JavaScript behaviors for the front-end display of webforms.
@@ -5,9 +6,7 @@
 
 (function ($) {
 
-Drupal.behaviors.webform = Drupal.behaviors.webform || {};
-
-Drupal.behaviors.webform.attach = function(context) {
+Drupal.behaviors.webform = function(context) {
   // Calendar datepicker behavior.
   Drupal.webform.datepicker(context);
 };
@@ -51,9 +50,6 @@ Drupal.webform.datepicker = function(context) {
         year = year ? year : today.getFullYear();
         month = month ? month : today.getMonth() + 1;
         day = day ? day : today.getDate();
-
-        // Make sure that the default year fits in the available options.
-        year = (year < startYear || year > endYear) ? startYear : year;
 
         // jQuery UI Datepicker will read the input field and base its date off
         // of that, even though in our case the input field is a button.

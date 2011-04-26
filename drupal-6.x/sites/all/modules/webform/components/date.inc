@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -34,13 +35,13 @@ function _webform_defaults_date() {
 function _webform_theme_date() {
   return array(
     'webform_date' => array(
-      'render element' => 'element',
+      'arguments' => array('element' => NULL),
     ),
     'webform_display_date' => array(
-      'render element' => 'element',
+      'arguments' => array('element' => NULL),
     ),
     'webform_calendar' => array(
-      'variables' => array('component' => NULL, 'calendar_classes' => NULL),
+      'arguments' => array('component' => NULL, 'calendar_classes' => NULL),
       'template' => 'templates/webform-calendar',
     ),
   );
@@ -62,12 +63,12 @@ function _webform_edit_date($component) {
   );
   $form['extra']['timezone'] = array(
     '#type' => 'radios',
-    '#title' => t('Default value timezone'),
+    '#title' => t('Timezone'),
     '#default_value' => empty($component['extra']['timezone']) ? 'user' : $component['extra']['timezone'],
     '#description' => t('Adjust the default time value according to a specific timezone.'),
     '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
-    '#weight' => -1,
-    '#access' => variable_get('configurable_timezones', 1),
+    '#weight' => 1,
+    '#access' => variable_get('configurable_timezones', 1) && module_exists('date_timezone'),
   );
 
   $form['display']['datepicker'] = array(
@@ -76,6 +77,7 @@ function _webform_edit_date($component) {
     '#default_value' => $component['extra']['datepicker'],
     '#description' => t('Enable a JavaScript date picker next to the date field.'),
     '#weight' => 2,
+    '#access' => function_exists('date_popup_load'),
     '#parents' => array('extra', 'datepicker'),
   );
 
@@ -127,18 +129,15 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
     '#year_end' => $component['extra']['year_end'],
     '#process' => array('webform_expand_date'),
     '#theme' => 'webform_date',
-    '#theme_wrappers' => array('webform_element'),
+    '#theme_wrappers' => array('webform_element_wrapper'),
+    '#pre_render' => array('webform_element_title_display'),
+    '#post_render' => array('webform_element_wrapper'),
     '#element_validate' => array('webform_validate_date'),
     '#webform_component' => $component,
   );
 
-  if ($component['extra']['datepicker']) {
+  if ($component['extra']['datepicker'] && function_exists('date_popup_load')) {
     $element['#datepicker'] = TRUE;
-    $element['#attached'] = array(
-      'library' => array(
-        array('system', 'ui.datepicker'),
-      ),
-    );
   }
 
   if (isset($value[0]) && $value[0] !== '') {
@@ -154,11 +153,6 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
  */
 function webform_expand_date($element) {
   $component = $element['#webform_component'];
-
-  // Accept a string or array value for #default_value.
-  if (isset($element['#default_value']) && is_string($element['#default_value'])) {
-    $element['#default_value'] = webform_date_array($element['#default_value'], 'date');
-  }
 
   // Set defaults according to existing #default_value (set by Form API)
   if (isset($element['#default_value']['month']) || isset($element['#default_value']['day']) || isset($element['#default_value']['year'])) {
@@ -182,7 +176,7 @@ function webform_expand_date($element) {
   }
 
   // Let Drupal do it's normal expansion.
-  $element = form_process_date($element);
+  $element = expand_date($element);
 
   // Set default values.
   foreach ($default_values as $type => $value) {
@@ -228,24 +222,24 @@ function webform_expand_date($element) {
 /**
  * Theme a webform date element.
  */
-function theme_webform_date($variables) {
-  $element = $variables['element'];
-
-  $element['year']['#attributes']['class'] = array('year');
-  $element['month']['#attributes']['class'] = array('month');
-  $element['day']['#attributes']['class'] = array('day');
+function theme_webform_date($element) {
+  $element['year']['#attributes']['class'] = 'year';
+  $element['month']['#attributes']['class'] = 'month';
+  $element['day']['#attributes']['class'] = 'day';
 
   // Add error classes to all items within the element.
   if (form_get_error($element)) {
-    $element['year']['#attributes']['class'][] = 'error';
-    $element['month']['#attributes']['class'][] = 'error';
-    $element['day']['#attributes']['class'][] = 'error';
+    $element['year']['#attributes']['class'] .= ' error';
+    $element['month']['#attributes']['class'] .= ' error';
+    $element['day']['#attributes']['class'] .= ' error';
   }
 
   $class = array('webform-container-inline');
 
   // Add the JavaScript calendar if available (provided by Date module package).
-  if (!empty($element['#datepicker'])) {
+  if (!empty($element['#datepicker']) && function_exists('date_popup_load')) {
+    date_popup_load();
+
     $class[] = 'webform-datepicker';
     $calendar_class = array('webform-calendar');
     if ($element['#year_start'] && is_numeric($element['#year_start'])) {
@@ -256,15 +250,16 @@ function theme_webform_date($variables) {
     }
     $calendar_class[] ='webform-calendar-day-' . variable_get('date_first_day', 0);
 
-    $calendar = theme('webform_calendar', array('component' => $element['#webform_component'], 'calendar_classes' => $calendar_class));
+    $calendar = theme('webform_calendar', $element['#webform_component'], $calendar_class);
   }
 
   $output = '';
   $output .= '<div class="' . implode(' ', $class) . '">';
-  $output .= drupal_render_children($element);
+  foreach (element_children($element) as $key) {
+    $output .= drupal_render($element[$key]);
+  }
   $output .= isset($calendar) ? $calendar : '';
   $output .= '</div>';
-
   return $output;
 }
 
@@ -320,7 +315,8 @@ function _webform_display_date($component, $value, $format = 'html') {
     '#title' => $component['name'],
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_date',
-    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#theme_wrappers' => $format == 'html' ? array('webform_element', 'webform_element_wrapper') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
     '#format' => $format,
     '#value' => $value,
     '#webform_component' => $component,
@@ -330,13 +326,12 @@ function _webform_display_date($component, $value, $format = 'html') {
 /**
  * Format the text output for this component.
  */
-function theme_webform_display_date($variables) {
-  $element = $variables['element'];
+function theme_webform_display_date($element) {
   $output = ' ';
   if ($element['#value']['year'] && $element['#value']['month'] && $element['#value']['day']) {
     $timestamp = webform_strtotime($element['#value']['month'] . '/' . $element['#value']['day'] . '/' . $element['#value']['year']);
     $format = webform_date_format('medium');
-    $output = format_date($timestamp, 'custom', $format, 'UTC');
+    $output = format_date($timestamp, 'custom', $format, 0);
   }
 
   return $output;
@@ -346,21 +341,19 @@ function theme_webform_display_date($variables) {
  * Implementation of _webform_analysis_component().
  */
 function _webform_analysis_date($component, $sids = array()) {
-  $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
-    ->fields('wsd', array('no', 'data'))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->orderBy('sid');
+  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT no,data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND  cid = %d ' . $sidfilter .
+    ' ORDER BY sid ASC ';
 
-  if (count($sids)) {
-    $query->condition('sid', $sids, 'IN');
-  }
-
-  $result = $query->execute();
+  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
 
   $dates = array();
   $submissions = 0;
-  foreach ($result as $row) {
+  while ($row = db_fetch_array($result)) {
     $submissions++;
     if ($row['data']) {
       $dates[] = webform_date_array($row['data']);
@@ -381,7 +374,7 @@ function _webform_table_date($component, $value) {
   if ($value[0]) {
     $timestamp = webform_strtotime($value[0]);
     $format = webform_date_format('short');
-    return format_date($timestamp, 'custom', $format, 'UTC');
+    return format_date($timestamp, 'custom', $format, 0);
   }
   else {
     return '';
@@ -406,7 +399,7 @@ function _webform_csv_data_date($component, $export_options, $value) {
   if ($value[0]) {
     $timestamp = webform_strtotime($value[0]);
     $format = webform_date_format('short');
-    return format_date($timestamp, 'custom', $format, 'UTC');
+    return format_date($timestamp, 'custom', $format, 0);
   }
   else {
     return '';

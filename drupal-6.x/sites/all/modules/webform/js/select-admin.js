@@ -1,3 +1,4 @@
+// $Id$
 
 /**
  * @file
@@ -6,8 +7,7 @@
 
 (function ($) {
 
-Drupal.behaviors.webformSelectLoadOptions = {};
-Drupal.behaviors.webformSelectLoadOptions.attach = function(context) {
+Drupal.behaviors.webformSelectLoadOptions = function(context) {
   settings = Drupal.settings;
 
   $('#edit-extra-options-source', context).change(function() {
