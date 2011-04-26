@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * A handler to provide a field that is completely custom by the administrator.

@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * Basic argument handler to implement string arguments that may have length

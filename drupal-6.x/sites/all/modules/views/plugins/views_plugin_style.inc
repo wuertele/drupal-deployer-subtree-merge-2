@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @defgroup views_style_plugins Views' style plugins
@@ -88,15 +89,7 @@ class views_plugin_style extends views_plugin {
     // @TODO: Document "uses grouping" in docs.php when docs.php is written.
     if ($this->uses_fields() && $this->definition['uses grouping']) {
       $options = array('' => t('<None>'));
-      foreach ($this->display->handler->get_handlers('field') as $field => $handler) {
-
-        if ($label = $handler->label()) {
-          $options[$field] = $label;
-        }
-        else {
-          $options[$field] = $handler->ui_name();
-        }
-      }
+      $options += $this->display->handler->get_field_labels();
 
       // If there are no fields, we can't group on them.
       if (count($options) > 1) {
@@ -151,13 +144,12 @@ class views_plugin_style extends views_plugin {
     // Render each group separately and concatenate.  Plugins may override this
     // method if they wish some other way of handling grouping.
     $output = '';
-    $this->view->row_index = 0;
     foreach ($sets as $title => $records) {
       if ($this->uses_row_plugin()) {
         $rows = array();
-        foreach ($records as $label => $row) {
+        foreach ($records as $row_index => $row) {
+          $this->view->row_index = $row_index;
           $rows[] = $this->row_plugin->render($row);
-          $this->view->row_index++;
         }
       }
       else {
@@ -182,30 +174,74 @@ class views_plugin_style extends views_plugin {
    *   The grouped record set.
    */
   function render_grouping($records, $grouping_field = '') {
+    // Make sure fields are rendered
+    $this->render_fields($this->view->result);
     $sets = array();
     if ($grouping_field) {
-      $this->view->row_index = 0;
-      foreach ($records as $row) {
+      foreach ($records as $index => $row) {
         $grouping = '';
         // Group on the rendered version of the field, not the raw.  That way,
         // we can control any special formatting of the grouping field through
         // the admin or theme layer or anywhere else we'd like.
         if (isset($this->view->field[$grouping_field])) {
-          $grouping = $this->view->field[$grouping_field]->theme($row);
-          $this->view->row_index++;
+          $grouping = $this->get_field($index, $grouping_field);
           if ($this->view->field[$grouping_field]->options['label']) {
             $grouping = $this->view->field[$grouping_field]->options['label'] . ': ' . $grouping;
           }
         }
-        $sets[$grouping][] = $row;
+        $sets[$grouping][$index] = $row;
       }
-      unset($this->view->row_index);
     }
     else {
       // Create a single group with an empty grouping field.
       $sets[''] = $records;
     }
     return $sets;
+  }
+
+  /**
+   * Render all of the fields for a given style and store them on the object.
+   *
+   * @param $result
+   *   The result array from $view->result
+   */
+  function render_fields($result) {
+    if (!$this->uses_fields()) {
+      return;
+    }
+
+    $start = views_microtime();
+    if (isset($this->rendered_fields)) {
+      return $this->rendered_fields;
+    }
+
+    $this->view->row_index = 0;
+    $keys = array_keys($this->view->field);
+    foreach ($result as $count => $row) {
+      $this->view->row_index = $count;
+      foreach ($keys as $id) {
+        $this->rendered_fields[$count][$id] = $this->view->field[$id]->theme($row);
+      }
+    }
+    unset($this->view->row_index);
+  }
+
+  /**
+   * Get a rendered field.
+   *
+   * @param $index
+   *   The index count of the row.
+   * @param $field
+   *    The id of the field.
+   */
+  function get_field($index, $field) {
+    if (!isset($this->rendered_fields)) {
+      $this->render_fields($this->view->result);
+    }
+
+    if (isset($this->rendered_fields[$index][$field])) {
+      return $this->rendered_fields[$index][$field];
+    }
   }
 
   function validate() {
@@ -215,6 +251,12 @@ class views_plugin_style extends views_plugin {
       $plugin = $this->display->handler->get_plugin('row');
       if (empty($plugin)) {
         $errors[] = t('Style @style requires a row style but the row plugin is invalid.', array('@style' => $this->definition['title']));
+      }
+      else {
+        $result = $plugin->validate();
+        if (!empty($result) && is_array($result)) {
+          $errors = array_merge($errors, $result);
+        }
       }
     }
     return $errors;

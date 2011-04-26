@@ -1,3 +1,4 @@
+; $Id$
 name = Views UI
 description = Administrative interface to views. Without this module, you cannot create or edit your views.
 package = Views

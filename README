@@ -480,8 +480,8 @@ git commit -m "Merge of viewreference"
 
 
 git remote add -f drupal.org/views http://git.drupal.org/project/views.git
-git merge -s ours --no-commit 429d3608a94b0a2436c7cd60062ecc8d36e67061
-git read-tree --prefix=drupal-6.x/sites/all/modules/views/ -u 429d3608a94b0a2436c7cd60062ecc8d36e67061
+git merge -s ours --no-commit 42fe4029ca7d7410f15933032a17e979bb0957c4
+git read-tree --prefix=drupal-6.x/sites/all/modules/views/ -u 42fe4029ca7d7410f15933032a17e979bb0957c4
 git commit -m "Merge of views"
 
 

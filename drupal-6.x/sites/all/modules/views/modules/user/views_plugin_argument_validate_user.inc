@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * Validate whether an argument is a valid user.
@@ -62,11 +63,17 @@ class views_plugin_argument_validate_user extends views_plugin_argument_validate
     // However, is_integer() will always fail, since $argument is a string.
     if (is_numeric($argument) && $argument == (int)$argument) {
       if ($type == 'uid' || $type == 'either') {
+        if ($argument == $GLOBALS['user']->uid) {
+          $account = $GLOBALS['user'];
+        }
         $where = 'uid = %d';
       }
     }
     else {
       if ($type == 'name' || $type == 'either') {
+        if ($argument == $GLOBALS['user']->name) {
+          $account = $GLOBALS['user'];
+        }
         $where = "name = '%s'";
       }
     }
@@ -76,8 +83,10 @@ class views_plugin_argument_validate_user extends views_plugin_argument_validate
       return FALSE;
     }
 
-    $query = "SELECT uid, name FROM {users} WHERE $where";
-    $account = db_fetch_object(db_query($query, $argument));
+    if (!isset($account)) {
+      $query = "SELECT uid, name FROM {users} WHERE $where";
+      $account = db_fetch_object(db_query($query, $argument));
+    }
     if (empty($account)) {
       // User not found.
       return FALSE;
@@ -86,7 +95,7 @@ class views_plugin_argument_validate_user extends views_plugin_argument_validate
     // See if we're filtering users based on roles.
     if (!empty($this->argument->options['validate_user_restrict_roles']) && !empty($this->argument->options['validate_user_roles'])) {
       $roles = $this->argument->options['validate_user_roles'];
-      $acccont->roles = array();
+      $account->roles = array();
       $account->roles[] = $account->uid ? DRUPAL_AUTHENTICATED_RID : DRUPAL_ANONYMOUS_RID;
       $result = db_query('SELECT rid FROM {users_roles} WHERE uid = %d', $account->uid);
       while ($role = db_fetch_object($result)) {
