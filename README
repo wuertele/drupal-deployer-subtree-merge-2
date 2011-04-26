@@ -509,6 +509,11 @@ git merge -s ours --no-commit 70ffd85ffe879daa101d631a858ec7f1cd841d53
 git read-tree --prefix=drupal-6.x/sites/all/modules/xmlsitemap/ -u 70ffd85ffe879daa101d631a858ec7f1cd841d53
 git commit -m "Merge of xmlsitemap"
 
+git remote add -f drupal.org/ifeeldirty http://git.drupal.org/project/ifeeldirty.git
+git merge -s ours --no-commit 20127b2b8250cf7c73f7b6ca8839f3b497f1a269
+git read-tree --prefix=drupal-6.x/sites/all/themes/ifeeldirty/ -u 20127b2b8250cf7c73f7b6ca8839f3b497f1a269
+git commit -m "Merge of ifeeldirty"
+
 git checkout mangle
 cp -r ~/filezilla/modules/dev/onthisdate drupal-6.x/sites/all/modules
 git commit -am "dave's module tutorial work"
