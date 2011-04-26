@@ -520,6 +520,13 @@ git merge -s ours --no-commit 245ded7dc0c2b24d2e6207efaf6f6e946fa1bd08
 git read-tree --prefix=drupal-6.x/sites/all/themes/minimalist/ -u 245ded7dc0c2b24d2e6207efaf6f6e946fa1bd08
 git commit -m "Merge of ifeeldirty"
 
+git remote add -f drupal.org/pixture_reloaded http://git.drupal.org/project/pixture_reloaded.git
+git merge -s ours --no-commit ce6fa1f68eb70cca59abfb7780de8573b54091cf
+git read-tree --prefix=drupal-6.x/sites/all/themes/pixture_reloaded/ -u ce6fa1f68eb70cca59abfb7780de8573b54091cf
+git commit -m "Merge of ifeeldirty"
+
+
+
 git checkout mangle
 cp -r ~/filezilla/modules/dev/onthisdate drupal-6.x/sites/all/modules
 git commit -am "dave's module tutorial work"
