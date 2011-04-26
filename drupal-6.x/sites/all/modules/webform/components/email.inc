@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -33,7 +34,7 @@ function _webform_defaults_email() {
 function _webform_theme_email() {
   return array(
     'webform_display_email' => array(
-      'render element' => 'element',
+      'arguments' => array('component' => NULL, 'value' => NULL, 'format' => 'plain'),
     ),
   );
 }
@@ -116,12 +117,14 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#attributes' => $component['extra']['attributes'],
     '#element_validate'  => array('_webform_validate_email'),
-    '#theme_wrappers' => array('webform_element'),
+    '#theme_wrappers' => array('webform_element_wrapper'),
+    '#pre_render' => array('webform_element_title_display'),
+    '#post_render' => array('webform_element_wrapper'),
     '#webform_component' => $component,
   );
 
   // Add an e-mail class for identifying the difference from normal textfields.
-  $element['#attributes']['class'][] = 'email';
+  $element['#attributes']['class'] = isset($element['#attributes']['class']) ? $element['#attributes']['class'] . ' email' : 'email';
 
   // Enforce uniqueness.
   if ($component['extra']['unique']) {
@@ -174,7 +177,8 @@ function _webform_display_email($component, $value, $format = 'html') {
     '#title' => $component['name'],
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_email',
-    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#theme_wrappers' => $format == 'html' ? array('webform_element', 'webform_element_wrapper') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
     '#format' => $format,
     '#value' => isset($value[0]) ? $value[0] : '',
     '#webform_component' => $component,
@@ -184,8 +188,7 @@ function _webform_display_email($component, $value, $format = 'html') {
 /**
  * Format the text output for this component.
  */
-function theme_webform_display_email($variables) {
-  $element = $variables['element'];
+function theme_webform_display_email($element) {
   $element['#value'] = empty($element['#value']) ? ' ' : $element['#value'];
   return $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
 }
@@ -194,21 +197,18 @@ function theme_webform_display_email($variables) {
  * Implementation of _webform_analysis_component().
  */
 function _webform_analysis_email($component, $sids = array()) {
-  $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
-    ->fields('wsd', array('no', 'data'))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid']);
-
-  if (count($sids)) {
-    $query->condition('sid', $sids, 'IN');
-  }
-
+  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' . $sidfilter;
   $nonblanks = 0;
   $submissions = 0;
   $wordcount = 0;
 
-  $result = $query->execute();
-  foreach ($result as $data) {
+  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
+  while ($data = db_fetch_array($result)) {
     if (drupal_strlen(trim($data['data'])) > 0) {
       $nonblanks++;
       $wordcount += str_word_count(trim($data['data']));

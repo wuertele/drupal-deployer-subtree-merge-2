@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -79,13 +80,7 @@ function hook_webform_submission_presave($node, &$submission) {
  */
 function hook_webform_submission_insert($node, $submission) {
   // Insert a record into a 3rd-party module table when a submission is added.
-  db_insert('mymodule_table')
-    ->fields(array(
-      'nid' => $node->nid,
-      'sid' => $submission->sid,
-      'foo' => 'foo_data',
-    ))
-    ->execute();
+  db_query("INSERT INTO {mymodule_table} nid = %d, sid = %d, foo = '%s'", $node->nid, $submission->sid, 'foo_data');
 }
 
 /**
@@ -102,13 +97,7 @@ function hook_webform_submission_insert($node, $submission) {
  */
 function hook_webform_submission_update($node, $submission) {
   // Update a record in a 3rd-party module table when a submission is updated.
-  db_update('mymodule_table')
-    ->fields(array(
-      'foo' => 'foo_data',
-    ))
-    ->condition('nid', $node->nid)
-    ->condition('sid', $submission->sid)
-    ->execute();
+  db_query("UPDATE {mymodule_table} SET (foo) VALUES ('%s') WHERE nid = %d, sid = %d", 'foo_data', $node->nid, $submission->sid);
 }
 
 /**
@@ -121,34 +110,7 @@ function hook_webform_submission_update($node, $submission) {
  */
 function hook_webform_submission_delete($node, $submission) {
   // Delete a record from a 3rd-party module table when a submission is deleted.
-  db_delete('mymodule_table')
-    ->condition('nid', $node->nid)
-    ->condition('sid', $submission->sid)
-    ->execute();
-}
-
-/**
- * Provide a list of actions that can be executed on a submission.
- *
- * Some actions are displayed in the list of submissions such as edit, view, and
- * delete. All other actions are displayed only when viewing the submission.
- * These additional actions may be specified in this hook. Examples included
- * directly in the Webform module include PDF, print, and resend e-mails. Other
- * modules may extend this list by using this hook.
- *
- * @param $node
- *   The Webform node on which this submission was made.
- * @param $submission
- *   The Webform submission on which the actions may be performed.
- */
-function hook_webform_submission_actions($node, $submission) {
-  if (webform_results_access($node)) {
-    $actions['myaction'] = array(
-      'title' => t('Do my action'),
-      'href' => 'node/' . $node->nid . '/submission/' . $submission->sid . '/myaction',
-      'query' => drupal_get_destination(),
-    );
-  }
+  db_query("DELETE FROM {mymodule_table} WHERE nid = %d, sid = %d", $node->nid, $submission->sid);
 }
 
 /**
@@ -179,15 +141,15 @@ function hook_webform_submission_render_alter(&$renderable) {
  * Modify a loaded Webform component.
  *
  * IMPORTANT: This hook does not actually exist because components are loaded
- * in bulk as part of webform_node_load(). Use hook_node_load() to modify loaded
+ * in bulk as part of webform_node_load(). Use hook_nodeapi() to modify loaded
  * components when the node is loaded. This example is provided merely to point
- * to hook_node_load().
+ * to hook_nodeapi().
  *
  * @see hook_nodeapi()
  * @see webform_node_load()
  */
 function hook_webform_component_load() {
-  // This hook does not exist. Instead use hook_node_load().
+  // This hook does not exist. Instead use hook_nodeapi().
 }
 
 /**
@@ -212,13 +174,7 @@ function hook_webform_component_presave(&$component) {
  */
 function hook_webform_component_insert($component) {
   // Insert a record into a 3rd-party module table when a component is inserted.
-  db_insert('mymodule_table')
-    ->fields(array(
-      'nid' => $component['nid'],
-      'cid' => $component['cid'],
-      'foo' => 'foo_data',
-    ))
-    ->execute();
+  db_query("INSERT INTO {mymodule_table} (nid, cid) VALUES (%d, %d)", $component['nid'], $component['cid']);
 }
 
 /**
@@ -226,13 +182,7 @@ function hook_webform_component_insert($component) {
  */
 function hook_webform_component_update($component) {
   // Update a record in a 3rd-party module table when a component is updated.
-  db_update('mymodule_table')
-    ->fields(array(
-      'foo' => 'foo_data',
-    ))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->execute();
+  db_query('UPDATE {mymodule_table} SET value "%s" WHERE nid = %d AND cid = %d)', 'foo', $component['nid'], $component['cid']);
 }
 
 /**
@@ -240,10 +190,7 @@ function hook_webform_component_update($component) {
  */
 function hook_webform_component_delete($component) {
   // Delete a record in a 3rd-party module table when a component is deleted.
-  db_delete('mymodule_table')
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->execute();
+  db_query('DELETE FROM {mymodule_table} WHERE nid = %d AND cid = %d)', $component['nid'], $component['cid']);
 }
 
 /**
@@ -546,7 +493,7 @@ function _webform_delete_component($component, $value) {
  */
 function _webform_help_component($section) {
   switch ($section) {
-    case 'admin/config/content/webform#grid_description':
+    case 'admin/settings/webform#grid_description':
       return t('Allows creation of grid questions, denoted by radio buttons.');
   }
 }
@@ -589,26 +536,21 @@ function _webform_theme_component() {
  */
 function _webform_analysis_component($component, $sids = array(), $single = FALSE) {
   // Generate the list of options and questions.
-  $options = _webform_select_options_from_text($component['extra']['options'], TRUE);
-  $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
+  $options = _webform_component_options($component['extra']['options']);
+  $questions = array_values(_webform_component_options($component['extra']['questions']));
 
   // Generate a lookup table of results.
-  $query = db_select('webform_submitted_data', 'wsd')
-    ->fields('wsd', array('no', 'data'))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->condition('data', '', '<>')
-    ->groupBy('no')
-    ->groupBy('data');
-  $query->addExpression('COUNT(sid)', 'datacount');
-
-  if (count($sids)) {
-    $query->condition('sid', $sids, 'IN');
-  }
-
-  $result = $query->execute();
+  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
+  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
+  $query = 'SELECT no, data, count(data) as datacount '.
+    ' FROM {webform_submitted_data} '.
+    ' WHERE nid = %d '.
+    ' AND cid = %d '.
+    " AND data != '' ". $sidfilter .
+    ' GROUP BY no, data';
+  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
   $counts = array();
-  foreach ($result as $data) {
+  while ($data = db_fetch_object($result)) {
     $counts[$data->no][$data->data] = $data->datacount;
   }
 
@@ -629,7 +571,7 @@ function _webform_analysis_component($component, $sids = array(), $single = FALS
     }
     $rows[] = $row;
   }
-  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid'))));
+  $output = theme('table', $header, $rows, array('class' => 'webform-grid'));
 
   return array(array(array('data' => $output, 'colspan' => 2)));
 }

@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -9,14 +10,12 @@
 /**
  * Main configuration form for editing a webform node.
  */
-function webform_configure_form($form, &$form_state, $node) {
-  $path = drupal_get_path('module', 'webform');
-  $form = array(
-    '#attached' =>  array(
-      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
-      'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
-    ),
-  );
+function webform_configure_form(&$form_state, $node) {
+  $form = array();
+
+  // Add CSS and JS. Don't preprocess because these files are used rarely.
+  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', 'theme', 'all', FALSE);
+  drupal_add_js(drupal_get_path('module', 'webform') . '/js/webform-admin.js', 'module', 'header', FALSE, TRUE, FALSE);
 
   $form['nid'] = array(
     '#type' => 'value',
@@ -32,16 +31,16 @@ function webform_configure_form($form, &$form_state, $node) {
     '#weight' => -4,
   );
 
-  $form['submission']['confirmation'] = array(
-    '#type' => 'text_format',
+  $form['submission']['confirmation_wrapper']['confirmation'] = array(
+    '#type' => 'textarea',
     '#title' => t('Confirmation message'),
     '#description' => t('Message to be shown upon successful submission. If the redirection location is set to <em>Confirmation page</em> it will be shown on its own page, otherwise this displays as a message.'),
     '#default_value' => $node->webform['confirmation'],
     '#cols' => 40,
     '#rows' => 10,
-    '#format' => $node->webform['confirmation_format'],
-    '#parents' => array('confirmation'),
   );
+
+  $form['submission']['confirmation_wrapper']['format'] = filter_form($node->webform['confirmation_format'], NULL, array('confirmation_format'));
 
   // Redirection settings.
   if (strpos($node->webform['redirect_url'], '<') === 0) {
@@ -87,7 +86,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#type' => 'item',
     '#title' => t('Submission limit'),
     '#theme' => 'webform_advanced_submit_limit_form',
-    '#description' => t('Limit the number of submissions <em>per user</em>. A user is identified by their user login if logged-in, or by their IP Address and Cookie if anonymous. Use of cookies may be modified in the global <a href="!url">Webform settings</a>.', array('!url' => url('admin/config/content/webform'))),
+    '#description' => t('Limit the number of submissions <em>per user</em>. A user is identified by their user login if logged-in, or by their IP Address and Cookie if anonymous. Use of cookies may be modified in the global <a href="!url">Webform settings</a>.', array('!url' => url('admin/settings/webform'))),
   );
   $form['submission']['submit_limit']['enforce_limit'] = array(
     '#type' => 'radios',
@@ -173,15 +172,9 @@ function webform_configure_form($form, &$form_state, $node) {
   );
   $form['advanced']['allow_draft'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Show "Save draft" button'),
+    '#title' => t('Allow users to save a draft'),
     '#default_value' => $node->webform['allow_draft'],
-    '#description' => t('Allow your users to save and finish the form later. This option is available only for authenticated users.'),
-  );
-  $form['advanced']['auto_save'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Automatically save as draft between pages'),
-    '#default_value' => $node->webform['auto_save'],
-    '#description' => t('Automatically save partial submissions when users click the "Next" or "Previous" buttons in a multipage form.'),
+    '#description' => t('Allow your users to save and finish the form later.'),
   );
   $form['advanced']['submit_notice'] = array(
     '#type' => 'checkbox',
@@ -249,8 +242,8 @@ function webform_configure_form_submit($form, &$form_state) {
   $node = node_load($form_state['values']['nid']);
 
   // Save the confirmation.
-  $node->webform['confirmation'] = $form_state['values']['confirmation']['value'];
-  $node->webform['confirmation_format'] = $form_state['values']['confirmation']['format'];
+  $node->webform['confirmation'] = $form_state['values']['confirmation'];
+  $node->webform['confirmation_format'] = $form_state['values']['confirmation_format'];
 
   // Save the redirect URL
   $node->webform['redirect_url'] = $form_state['values']['redirect_url'];
@@ -269,9 +262,6 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Set the draft option.
   $node->webform['allow_draft'] = $form_state['values']['allow_draft'];
-
-  // Set the auto-save draft option.
-  $node->webform['auto_save'] = $form_state['values']['auto_save'];
 
   // Set the submit limit to -1 if set to unlimited.
   if ($form_state['values']['enforce_limit'] == 'no') {
@@ -295,45 +285,34 @@ function webform_configure_form_submit($form, &$form_state) {
 }
 
 /**
+ * Theme the submit limit fieldset on the webform node form.
+ */
+function theme_webform_advanced_submit_limit_form($form) {
+  $form['submit_limit']['#attributes']['class'] = 'webform-set-active';
+  $form['submit_interval']['#attributes']['class'] = 'webform-set-active';
+  // Remove div wrappers around limit options.
+  $replacements = array(
+    '!count' => preg_replace('/(<div[^>]*>)(.*?)(<\/div>)/s', '$2', drupal_render($form['submit_limit'])),
+    '!timespan' =>  preg_replace('/(<div[^>]*>)(.*?)(<\/div>)/s', '$2', drupal_render($form['submit_interval'])),
+  );
+  $form['enforce_limit']['yes']['#title'] = t('Limit to !count submission(s) !timespan', $replacements);
+  return drupal_render($form);
+}
+
+/**
  * Theme the redirection setting on the webform node form.
  */
-function theme_webform_advanced_redirection_form($variables) {
-  $form = $variables['form'];
+function theme_webform_advanced_redirection_form($form) {
   // Add special class for setting the active radio button.
-  $form['redirect_url']['#attributes']['class'] = array('webform-set-active');
+  $form['redirect_url']['#attributes']['class'] = 'webform-set-active';
 
   // Remove title and description for Redirect URL field.
   $form['redirect_url']['#title'] = NULL;
   $form['redirect_url']['#description'] = NULL;
 
-  $form['redirect']['confirmation']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['redirect']['url']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['redirect']['none']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['redirect']['url']['#inline_element'] = $form['redirect']['url']['#title'] . ': ' . drupal_render($form['redirect_url']);
-  $form['redirect']['url']['#title'] = NULL;
-
-  return drupal_render_children($form);
-}
-
-/**
- * Theme the submit limit fieldset on the webform node form.
- */
-function theme_webform_advanced_submit_limit_form($variables) {
-  $form = $variables['form'];
-  $form['submit_limit']['#attributes']['class'] = array('webform-set-active');
-  $form['submit_interval']['#attributes']['class'] = array('webform-set-active');
-  // Remove div wrappers around limit options.
-  $form['submit_limit']['#theme_wrappers'] = array();
-  $form['submit_interval']['#theme_wrappers'] = array();
-  $replacements = array(
-    '!count' => drupal_render($form['submit_limit']),
-    '!timespan' => drupal_render($form['submit_interval']),
-  );
-
-  $form['enforce_limit']['no']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['enforce_limit']['yes']['#title'] = NULL;
-  $form['enforce_limit']['yes']['#inline_element'] = t('Limit to !count submission(s) !timespan', $replacements);
-  $form['enforce_limit']['yes']['#theme_wrappers'] = array('webform_inline_radio');
-
-  return drupal_render_children($form);
+  // Add prefix and suffix to display Redirect URL field inline.
+  $form['redirect']['url']['#prefix'] = '<div class="webform-container-inline">';
+  $form['redirect']['url']['#suffix'] = '</div>';
+  $form['redirect']['url']['#title'] = $form['redirect']['url']['#title'] . ': ' . drupal_render($form['redirect_url']);
+  return drupal_render($form);
 }
