@@ -1,0 +1,68 @@
+<?php
+// $Id$
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the onthisdate module
+*/
+function onthisdate_perm() {
+  return array('access onthisdate content');
+} // function onthisdate_perm()
+
+/**
+* Implementation of hook_block().
+* @param string $op one of "list", "view", "save" and "configure"
+* @param integer $delta code to identify the block
+* @param array $edit only for "save" operation
+*/
+function onthisdate_block($op='list', $delta=0) {
+  // set up an empty array which will contain the block contents
+  $block = array();
+
+  if ($op == "list") {
+    // Generate listing of blocks from this module, for the admin/block page
+    $block[0]["info"] = t('On This Date');
+  }
+  else if ($op == 'view') {
+    // Generate our block content
+
+    // Get today's date
+    $today = getdate();
+
+    // calculate midnight one week ago
+    $start_time = mktime(0, 0, 0,
+       $today['mon'], ($today['mday'] - 7), $today['year']);
+
+    // we want items that occur only on the day in question, so  
+    // calculate 1 day
+    $end_time = $start_time + 86400; 
+    // 60 * 60 * 24 = 86400 seconds in a day
+   
+    $query = "SELECT nid, title, created FROM {node} WHERE created >= '%d' AND created <= '%d'";
+
+    $query_result =  db_query($query, $start_time, $end_time);
+
+    // set up an empty string to contain the block contents
+    $block_content = ''; 
+    
+    // Loop round each link and concatenate to the block content
+    while ($links = db_fetch_object($query_result)) {
+      $block_content .=  l($links->title, 'node/'. $links->nid) .'<br />';
+    }
+
+    $block['subject'] = 'On This Date';
+
+    // check to see if there was any content before returning
+    //  the block view
+    if ($block_content == '') {  
+      // no content from a week ago
+      $block['content'] = 'Sorry No Content';
+    }
+    else {
+      $block['content'] = $block_content;
+    }
+  }
+
+  // return the built content
+  return $block;
+}
+
