@@ -1,13 +1,12 @@
 <?php
+// $Id$
 
 /**
  * Access plugin that provides role-based access control.
  */
 class views_plugin_access_role extends views_plugin_access {
   function access($account) {
-    $roles = array_keys($account->roles);
-    $roles[] = $account->uid ? DRUPAL_AUTHENTICATED_RID : DRUPAL_ANONYMOUS_RID;
-    return array_intersect(array_filter($this->options['role']), $roles);
+    return views_check_roles(array_filter($this->options['role']), $account);
   }
 
   function get_access_callback() {

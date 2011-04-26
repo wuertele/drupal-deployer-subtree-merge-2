@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /**
  * @file handlers.inc
  * Defines the various handler objects to help build and display views.
@@ -343,6 +344,11 @@ class views_handler extends views_object {
    */
   function exposed_info() { }
 
+  /**
+   * Determine if a handler can be exposed.
+   */
+  function can_expose() { return FALSE; }
+
  /**
   * Check whether current user has access to this handler.
   *
@@ -410,7 +416,6 @@ class views_handler extends views_object {
    */
   function ensure_my_table() {
     if (!isset($this->table_alias)) {
-      if (!method_exists($this->query, 'ensure_table')) { vpr_trace(); exit; }
       $this->table_alias = $this->query->ensure_table($this->table, $this->relationship);
     }
     return $this->table_alias;
@@ -775,19 +780,17 @@ class views_many_to_one_helper {
  * @param $str
  *   The string to parse.
  * @param $filter
- *   The filter object to use as a base. If not specified one will
- *   be created.
+ *   The filter object to use as a base.
  *
  * @return $filter
  *   The new filter object.
  */
-function views_break_phrase($str, $filter = NULL) {
+function views_break_phrase($str, &$filter) {
   if (!$filter) {
     $filter = new stdClass();
   }
 
   // Set up defaults:
-
   if (!isset($filter->value)) {
     $filter->value = array();
   }
@@ -796,7 +799,7 @@ function views_break_phrase($str, $filter = NULL) {
     $filter->operator = 'or';
   }
 
-  if (empty($str)) {
+  if ($str == '') {
     return $filter;
   }
 
