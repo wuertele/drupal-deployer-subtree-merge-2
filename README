@@ -124,8 +124,8 @@ git read-tree --prefix=drupal-6.x/sites/all/modules/currency/ -u  f0c443ca4dab3e
 git commit -m "Merge of currency"
 
 
-git fetch --tags --verbose --progress drupal.org/devel
 git remote add -f drupal.org/devel http://git.drupal.org/project/devel.git
+git fetch --tags --verbose --progress drupal.org/devel
 git merge -s ours --no-commit ff56ee79f0a66aea1578aedf95447e922333f5bc
 git read-tree --prefix=drupal-6.x/sites/all/modules/devel/ -u  ff56ee79f0a66aea1578aedf95447e922333f5bc
 git commit -m "Merge of devel"
@@ -412,14 +412,15 @@ git commit -m "Merge of site_verify"
 
 
 git remote add -f drupal.org/tablefield http://git.drupal.org/project/tablefield.git
-git merge -s ours --no-commit be09f99a16832bfcc18f0372a1d04833b3f31dc1
-git read-tree --prefix=drupal-6.x/sites/all/modules/tablefield/ -u be09f99a16832bfcc18f0372a1d04833b3f31dc1
+git merge -s ours --no-commit 40c54a58fa46410527a70ac1676e57bab8ed262d
+git read-tree --prefix=drupal-6.x/sites/all/modules/tablefield/ -u 40c54a58fa46410527a70ac1676e57bab8ed262d
 git commit -m "Merge of tablefield"
 
 
 git remote add -f drupal.org/tabs http://git.drupal.org/project/tabs.git
-git merge -s ours --no-commit 204e807eca8ed11510caf3b30720833902065541
-git read-tree --prefix=drupal-6.x/sites/all/modules/tabs/ -u 204e807eca8ed11510caf3b30720833902065541
+git fetch --tags --verbose --progress drupal.org/tabs
+git merge -s ours --no-commit 7d6b2ba32d94075b3f881db500fff6aec73a9cf7
+git read-tree --prefix=drupal-6.x/sites/all/modules/tabs/ -u 7d6b2ba32d94075b3f881db500fff6aec73a9cf7
 git commit -m "Merge of tabs"
 
 
