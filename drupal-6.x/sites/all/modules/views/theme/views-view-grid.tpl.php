@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /**
  * @file views-view-grid.tpl.php
  * Default simple view template to display a rows in a grid.
@@ -20,7 +21,7 @@
         if ($row_number == 0) {
           $row_class .= ' row-first';
         }
-        elseif (count($rows) == ($row_number + 1)) {
+        if (count($rows) == ($row_number + 1)) {
           $row_class .= ' row-last';
         }
       ?>

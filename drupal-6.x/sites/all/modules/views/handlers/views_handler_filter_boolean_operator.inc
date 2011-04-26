@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /**
  * Simple filter to handle matching of boolean values
  *
@@ -23,7 +24,7 @@ class views_handler_filter_boolean_operator extends views_handler_filter {
       $this->value_value = $this->definition['label'];
     }
     if (isset($this->definition['accept_null'])) {
-      $this->accept_null = (bool) $this->definition['accept null'];
+      $this->accept_null = (bool) $this->definition['accept_null'];
     }
     $this->value_options = NULL;
     parent::construct();
@@ -94,7 +95,7 @@ class views_handler_filter_boolean_operator extends views_handler_filter {
         $form_state['input'][$identifier] = $this->value;
       }
       // If we're configuring an exposed filter, add an <Any> option.
-      $any_label = variable_get('views_exposed_filter_any_label', 'old_any') == 'old_any' ? t('<Any>') : t('- Any -');
+      $any_label = variable_get('views_exposed_filter_any_label', 'old_any') == 'old_any' ? '<Any>' : t('- Any -');
       if ($form['value']['#type'] != 'select') {
         $any_label = check_plain($any_label);
       }

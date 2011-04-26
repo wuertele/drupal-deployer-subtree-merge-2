@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * Field handler to provide simple renderer that allows using a themed user link
@@ -8,6 +9,11 @@ class views_handler_field_user_picture extends views_handler_field {
     parent::construct();
     $this->additional_fields['uid'] = 'uid';
     $this->additional_fields['name'] = 'name';
+    $this->additional_fields['mail'] = 'mail';   
+  }
+
+  function element_type() {
+    return 'div';
   }
 
   function render($values) {
@@ -15,6 +21,7 @@ class views_handler_field_user_picture extends views_handler_field {
     $account = new stdClass();
     $account->uid = $values->{$this->aliases['uid']};
     $account->name = $values->{$this->aliases['name']};
+    $account->mail = $values->{$this->aliases['mail']};
     $account->picture = $values->{$this->field_alias};
 
     return theme('user_picture', $account);

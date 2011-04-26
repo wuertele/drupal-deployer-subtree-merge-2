@@ -1,3 +1,4 @@
+/* $Id$ */
 
 table.views-entry {
   margin: 3px 0;
@@ -72,10 +73,6 @@ table.view-disabled td.view-name,
 table.view-disabled td.view-ops {
   line-height: 1.6;
   padding-bottom: 0.3em;
-}
-table.views-entry td.view-name,
-table.views-entry td.view-ops {
-  background: #eee;
 }
 table.view-enabled td.view-name,
 table.view-enabled td.view-ops {
