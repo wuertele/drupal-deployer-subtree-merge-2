@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -16,7 +17,7 @@ function _webform_defaults_markup() {
     'weight' => 0,
     'value' => '',
     'extra' => array(
-      'format' => NULL,
+      'format' => FILTER_FORMAT_DEFAULT,
     ),
   );
 }
@@ -26,31 +27,22 @@ function _webform_defaults_markup() {
  */
 function _webform_edit_markup($component) {
   $form = array();
-  $form['value'] = array(
-    '#type' => 'text_format',
+  $form['markup']['value'] = array(
+    '#type' => 'textarea',
     '#title' => t('Value'),
     '#default_value' => $component['value'],
     '#description' => t('Markup allows you to enter custom HTML or PHP logic into your form.') . theme('webform_token_help'),
     '#weight' => -1,
-    '#format' => $component['extra']['format'],
-    '#element_validate' => array('_webform_edit_markup_validate'),
+    '#parents' => array('value'),
   );
+  // Add the filter form.
+  $form['markup']['format'] = filter_form($component['extra']['format'], 0, array('extra', 'format'));
 
   $form['extra']['description'] = array(); // No description for markup.
   $form['display'] = array('#type' => 'markup'); // Hide the display options.
   $form['display']['title_display'] = array();
 
   return $form;
-}
-
-/**
- * Element validate handler; Set the text format value.
- */
-function _webform_edit_markup_validate($form, &$form_state) {
-  if (is_array($form_state['values']['value'])) {
-    $form_state['values']['extra']['format'] = $form_state['values']['value']['format'];
-    $form_state['values']['value'] = $form_state['values']['value']['value'];
-  }
 }
 
 /**
@@ -61,9 +53,10 @@ function _webform_render_markup($component, $value = NULL, $filter = TRUE) {
     '#type' => 'markup',
     '#title' => $filter ? NULL : $component['name'],
     '#weight' => $component['weight'],
-    '#markup' => $filter ? _webform_filter_values(check_markup($component['value'], $component['extra']['format'], '', TRUE), NULL, NULL, NULL, FALSE) : $component['value'],
+    '#markup' => $filter ? _webform_filter_values(check_markup($component['value'], $component['extra']['format'], FALSE), NULL, NULL, NULL, FALSE) : $component['value'],
     '#input_format' => $component['extra']['format'],
-    '#theme_wrappers' => array('webform_element'),
+    '#theme_wrappers' => array('webform_element_wrapper'),
+    '#post_render' => array('webform_element_wrapper'),
     '#webform_component' => $component,
   );
 

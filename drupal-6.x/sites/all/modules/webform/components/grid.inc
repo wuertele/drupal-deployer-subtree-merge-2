@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -38,10 +39,10 @@ function _webform_defaults_grid() {
 function _webform_theme_grid() {
   return array(
     'webform_grid' => array(
-      'render element' => 'element',
+      'arguments' => array('grid_element' => NULL),
     ),
     'webform_display_grid' => array(
-      'render element' => 'element',
+      'arguments' => array('element' => NULL),
     ),
   );
 }
@@ -58,7 +59,7 @@ function _webform_edit_grid($component) {
       '#title' => t('Options'),
       '#collapsible' => TRUE,
       '#description' => t('Options to select across the top. Usually these are ratings such as "poor" through "excellent" or "strongly disagree" through "strongly agree".'),
-      '#attributes' => array('class' => array('webform-options-element')),
+      '#attributes' => array('class' => 'webform-options-element'),
       '#element_validate' => array('_webform_edit_validate_options'),
     );
     $form['options']['options'] = array(
@@ -77,7 +78,7 @@ function _webform_edit_grid($component) {
       '#title' => t('Questions'),
       '#collapsible' => TRUE,
       '#description' => t('Questions list down the side of the grid.'),
-      '#attributes' => array('class' => array('webform-options-element')),
+      '#attributes' => array('class' => 'webform-options-element'),
       '#element_validate' => array('_webform_edit_validate_options'),
     );
     $form['questions']['options'] = array(
@@ -96,7 +97,7 @@ function _webform_edit_grid($component) {
       '#type' => 'textarea',
       '#title' => t('Options'),
       '#default_value' => $component['extra']['options'],
-      '#description' => t('Options to select across the top. One option per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Use of only alphanumeric characters and underscores is recommended in keys.') . theme('webform_token_help'),
+      '#description' => t('Options to select across the top. One option per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Only alphanumeric characters and underscores are allowed as a key.') . theme('webform_token_help'),
       '#cols' => 60,
       '#rows' => 5,
       '#weight' => -3,
@@ -108,7 +109,7 @@ function _webform_edit_grid($component) {
       '#type' => 'textarea',
       '#title' => t('Questions'),
       '#default_value' => $component['extra']['questions'],
-      '#description' => t('Questions list down the side of the grid. One question per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Use of only alphanumeric characters and underscores is recommended in keys.') . theme('webform_token_help'),
+      '#description' => t('Questions list down the side of the grid. One question per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Only alphanumeric characters and underscores are allowed as a key.') . theme('webform_token_help'),
       '#cols' => 60,
       '#rows' => 5,
       '#weight' => -2,
@@ -146,7 +147,9 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#theme' => 'webform_grid',
-    '#theme_wrappers' => array('webform_element'),
+    '#theme_wrappers' => array('webform_element_wrapper'),
+    '#pre_render' => array('webform_element_title_display'),
+    '#post_render' => array('webform_element_wrapper'),
     '#webform_component' => $component,
   );
 
@@ -168,7 +171,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
         '#required' => $component['mandatory'],
         '#options' => $options,
         '#type' => 'radios',
-        '#process' => array('form_process_radios', 'webform_expand_select_ids'),
+        '#process' => array('expand_radios', 'webform_expand_select_ids'),
 
         // Webform handles validation manually.
         '#validated' => TRUE,
@@ -200,7 +203,8 @@ function _webform_display_grid($component, $value, $format = 'html') {
     '#questions' => $questions,
     '#options' => $options,
     '#theme' => 'webform_display_grid',
-    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#theme_wrappers' => $format == 'html' ? array('webform_element', 'webform_element_wrapper') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
     '#sorted' => TRUE,
     '#webform_component' => $component,
   );
@@ -220,39 +224,37 @@ function _webform_display_grid($component, $value, $format = 'html') {
 /**
  * Format the text output for this component.
  */
-function theme_webform_display_grid($variables) {
-  $element = $variables['element'];
-
+function theme_webform_display_grid($element) {
   $component = $element['#webform_component'];
   $format = $element['#format'];
 
   if ($format == 'html') {
     $rows = array();
-    $header = array(array('data' => '', 'class' => array('webform-grid-question')));
+    $header = array(array('data' => '', 'class' => 'webform-grid-question'));
     foreach ($element['#options'] as $option) {
-      $header[] = array('data' => _webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
+      $header[] = array('data' => _webform_filter_xss($option), 'class' => 'checkbox webform-grid-option');
     }
     foreach (element_children($element) as $key) {
       $row = array();
-      $row[] = array('data' => _webform_filter_xss($element[$key]['#title']), 'class' => array('webform-grid-question'));
+      $row[] = array('data' => _webform_filter_xss($element[$key]['#title']), 'class' => 'webform-grid-question');
       foreach ($element['#options'] as $option_value => $option_label) {
         if (strcmp($option_value, $element[$key]['#value']) == 0) {
-          $row[] = array('data' => '<strong>X</strong>', 'class' => array('checkbox', 'webform-grid-option'));
+          $row[] = array('data' => '<strong>X</strong>', 'class' => 'checkbox webform-grid-option');
         }
         else {
-          $row[] = array('data' => '&nbsp;', 'class' => array('checkbox', 'webform-grid-option'));
+          $row[] = array('data' => '&nbsp', 'class' => 'checkbox webform-grid-option');
         }
       }
       $rows[] = $row;
     }
 
     $option_count = count($header) - 1;
-    $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
+    $output = theme('table', $header, $rows, array('class' => 'webform-grid webform-grid-' . $option_count));
   }
   else {
     $items = array();
     foreach (element_children($element) as $key) {
-      $items[] = ' - ' . $element[$key]['#title'] . ': ' . $element[$key]['#value'];
+      $items[] = ' - ' . $element[$key]['#title'] . ': ' . (isset($element['#options'][$element[$key]['#value']]) ? $element['#options'][$element[$key]['#value']] : '');
     }
     $output = implode("\n", $items);
   }
@@ -269,22 +271,17 @@ function _webform_analysis_grid($component, $sids = array()) {
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
 
   // Generate a lookup table of results.
-  $query = db_select('webform_submitted_data', 'wsd')
-    ->fields('wsd', array('no', 'data'))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->condition('data', '', '<>')
-    ->groupBy('no')
-    ->groupBy('data');
-  $query->addExpression('COUNT(sid)', 'datacount');
-
-  if (count($sids)) {
-    $query->condition('sid', $sids, 'IN');
-  }
-
-  $result = $query->execute();
+  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT no, data, count(data) as datacount ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' .
+    " AND data != '' " . $sidfilter .
+    ' GROUP BY no, data';
+  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
   $counts = array();
-  foreach ($result as $data) {
+  while ($data = db_fetch_object($result)) {
     $counts[$data->no][$data->data] = $data->datacount;
   }
 
@@ -305,7 +302,7 @@ function _webform_analysis_grid($component, $sids = array()) {
     }
     $rows[] = $row;
   }
-  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid'))));
+  $output = theme('table', $header, $rows, array('class' => 'webform-grid'));
 
 
   return array(array(array('data' => $output, 'colspan' => 2)));
@@ -316,18 +313,16 @@ function _webform_analysis_grid($component, $sids = array()) {
  */
 function _webform_table_grid($component, $value) {
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
+  $options = _webform_select_options_from_text($component['extra']['options'], TRUE);
+
   $output = '';
   // Set the value as a single string.
-  if (is_array($value)) {
-    foreach ($value as $item => $value) {
-      if ($value !== '') {
-        $output .= _webform_filter_xss($questions[$item]) . ': ' . _webform_filter_xss($value) . '<br />';
-      }
+  foreach ($questions as $key => $label) {
+    if (isset($value[$key]) && isset($options[$value[$key]])) {
+      $output .= _webform_filter_xss($label) . ': ' . _webform_filter_xss($options[$value[$key]]) . '<br />';
     }
   }
-  else {
-    $output = !isset($value[0]) ? '' : _webform_filter_xss($value[0]);
-  }
+
   return $output;
 }
 
@@ -372,11 +367,9 @@ function _webform_csv_data_grid($component, $export_options, $value) {
   return $return;
 }
 
-function theme_webform_grid($variables) {
-  $element = $variables['element'];
-
+function theme_webform_grid($element) {
   $rows = array();
-  $header = array(array('data' => '', 'class' => array('webform-grid-question')));
+  $header = array(array('data' => '', 'class' => 'webform-grid-question'));
   $first = TRUE;
   foreach (element_children($element) as $key) {
     $question_element = $element[$key];
@@ -384,23 +377,23 @@ function theme_webform_grid($variables) {
     // Set the header for the table.
     if ($first) {
       foreach ($question_element['#options'] as $option) {
-        $header[] = array('data' => _webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
+        $header[] = array('data' => _webform_filter_xss($option), 'class' => 'checkbox webform-grid-option');
       }
       $first = FALSE;
     }
 
     // Create a row with the question title.
-    $row = array(array('data' => _webform_filter_xss($question_element['#title']), 'class' => array('webform-grid-question')));
+    $row = array(array('data' => _webform_filter_xss($question_element['#title']), 'class' => 'webform-grid-question'));
 
     // Render each radio button in the row.
-    $radios = form_process_radios($question_element);
+    $radios = expand_radios($question_element);
     foreach (element_children($radios) as $key) {
       unset($radios[$key]['#title']);
-      $row[] = array('data' => drupal_render($radios[$key]), 'class' => array('checkbox', 'webform-grid-option'));
+      $row[] = array('data' => drupal_render($radios[$key]), 'class' => 'checkbox webform-grid-option');
     }
     $rows[] = $row;
   }
 
   $option_count = count($header) - 1;
-  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
+  return theme('form_element', $element, theme('table', $header, $rows, array('class' => 'webform-grid webform-grid-' . $option_count)));
 }

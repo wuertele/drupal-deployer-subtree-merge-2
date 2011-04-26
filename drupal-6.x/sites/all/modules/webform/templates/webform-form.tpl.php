@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * @file
@@ -30,7 +31,7 @@
 
   // Always print out the entire $form. This renders the remaining pieces of the
   // form that haven't yet been rendered above.
-  print drupal_render_children($form);
+  print drupal_render($form);
 
   // Print out the navigation again at the bottom.
   if (isset($form['submission_info']) || isset($form['navigation'])) {
