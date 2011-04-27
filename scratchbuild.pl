@@ -102,15 +102,15 @@ push @modules, { remote => "drupal.org/units", path => "drupal-6.x/sites/all/mod
 push @modules, { remote => "drupal.org/unitsapi", path => "drupal-6.x/sites/all/modules/unitsapi/", url => "http://git.drupal.org/project/unitsapi.git", objects => 169, commit => "b8f2874a81e0a173cb76265d033dbabe779f5f07", };
 push @modules, { remote => "drupal.org/user_register_notify", path => "drupal-6.x/sites/all/modules/user_register_notify/", url => "http://git.drupal.org/project/user_register_notify.git", objects => (154+24), commit => "d5ee0092aca9677ec3eeacf9cd8b864668b371b3", tags => 1};
 push @modules, { remote => "drupal.org/viewreference", path => "drupal-6.x/sites/all/modules/viewreference/", url => "http://git.drupal.org/project/viewreference.git", objects => 162, commit => "28b4ff175ee69bff2452abb225d247aa3ab3a4fd", };
-push @modules, { remote => "drupal.org/views", path => "drupal-6.x/sites/all/modules/views/", url => "http://git.drupal.org/project/views.git", objects => 30188, commit => "0d65a9782d35bd702de80d6fbd345f81d41d8743", };
-push @modules, { remote => "drupal.org/views_rss", path => "drupal-6.x/sites/all/modules/views_rss/", url => "http://git.drupal.org/project/views_rss.git", objects => 117, commit => "b30b54cb7c9573ce44d306e4fdbc149242f17f0d", };
+push @modules, { remote => "drupal.org/views", path => "drupal-6.x/sites/all/modules/views/", url => "http://git.drupal.org/project/views.git", objects => 30188, commit => "42fe4029ca7d7410f15933032a17e979bb0957c4", };
+push @modules, { remote => "drupal.org/views_rss", path => "drupal-6.x/sites/all/modules/views_rss/", url => "http://git.drupal.org/project/views_rss.git", objects => 117, commit => "b30b54cb7c9573ce44d306e4fdbc149242f17f0d"};
 push @modules, { remote => "drupal.org/viewsdisplaytabs", path => "drupal-6.x/sites/all/modules/viewsdisplaytabs/", url => "http://git.drupal.org/project/viewsdisplaytabs.git", objects => 69, commit => "15d618fbeee1257d0795f5245e03a9c9f96b0b42", };
-push @modules, { remote => "drupal.org/webform", path => "drupal-6.x/sites/all/modules/webform/", url => "http://git.drupal.org/project/webform.git", objects => (7786+3666), commit => "b30b54cb7c9573ce44d306e4fdbc149242f17f0d", tags => 1};
+push @modules, { remote => "drupal.org/webform", path => "drupal-6.x/sites/all/modules/webform/", url => "http://git.drupal.org/project/webform.git", objects => (7786+3666), commit => "157eb01f8eb9e96b19627f1abe1fca50a06393d6", tags => 1};
 push @modules, { remote => "drupal.org/xmlsitemap", path => "drupal-6.x/sites/all/modules/xmlsitemap/", url => "http://git.drupal.org/project/xmlsitemap.git", objects => 10850, commit => "70ffd85ffe879daa101d631a858ec7f1cd841d53", };
 push @modules, { remote => "facebook-php-sdk", path => "drupal-6.x/sites/all/modules/fbconnect/facebook-php-sdk/", url => "http://github.com/facebook/php-sdk.git", objects => 261, commit => "b14edfa34306e3f112d73fd72e73cf72f473c3d5", };
-push @modules, { remote => "drupal.org/ifeeldirty", path => "drupal-6.x/sites/all/themes/ifeeldirty/", url => "http://git.drupal.org/project/ifeeldirty.git", objects => 60, commit => "70ffd85ffe879daa101d631a858ec7f1cd841d53", };
-push @modules, { remote => "drupal.org/minimalist", path => "drupal-6.x/sites/all/themes/minimalist/", url => "http://git.drupal.org/project/minimalist.git", objects => (57+13), commit => "20127b2b8250cf7c73f7b6ca8839f3b497f1a269", tags => 1};
-push @modules, { remote => "drupal.org/pixture_reloaded", path => "drupal-6.x/sites/all/themes/pixture_reloaded/", url => "http://git.drupal.org/project/pixture_reloaded.git", objects => 635, commit => "245ded7dc0c2b24d2e6207efaf6f6e946fa1bd08", };
+push @modules, { remote => "drupal.org/ifeeldirty", path => "drupal-6.x/sites/all/themes/ifeeldirty/", url => "http://git.drupal.org/project/ifeeldirty.git", objects => 60, commit => "20127b2b8250cf7c73f7b6ca8839f3b497f1a269", };
+push @modules, { remote => "drupal.org/minimalist", path => "drupal-6.x/sites/all/themes/minimalist/", url => "http://git.drupal.org/project/minimalist.git", objects => (57+13), commit => "245ded7dc0c2b24d2e6207efaf6f6e946fa1bd08", tags => 1};
+push @modules, { remote => "drupal.org/pixture_reloaded", path => "drupal-6.x/sites/all/themes/pixture_reloaded/", url => "http://git.drupal.org/project/pixture_reloaded.git", objects => 635, commit => "ce6fa1f68eb70cca59abfb7780de8573b54091cf", };
 
 system_print ("mkdir -p $repository_path");
 chdir $repository_path;
@@ -134,6 +134,12 @@ foreach my $module (@module_add_order) {
 	$added_remote{$module->{remote}}++;
     }
 }
+
+chdir "$repository_path/..";
+my $repository_backup = "$repository_path" . ".bak";
+system_print ("rm -rf $repository_backup");
+system_print ("cp -a $repository_path $repository_backup");
+chdir $repository_path;
 
 my @module_merge_order = @modules;
 foreach my $module (@module_merge_order) {
