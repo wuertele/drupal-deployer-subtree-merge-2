@@ -10,8 +10,11 @@
 #	David Wuertele	Thu Apr 28 11:34:48 2011	Steal This Program!!!
 
 use strict;
+use FindBin '$Bin';
+use lib $Bin;
 use DrupalConfig;
 use Cwd 'abs_path';
+use File::Basename;
 
 my $quiet = undef;
 my $dry_run = undef;
@@ -22,6 +25,9 @@ if (! defined ($repository_relpath)) {
 }
 
 my $repository_path = abs_path ($repository_relpath);
+my $repository_backup;
+
+if (0) {
 
 system_print ("mkdir -p $repository_path");
 chdir $repository_path;
@@ -34,9 +40,11 @@ foreach my $branchname (keys %branch) {
     system_print ("git branch $branchname");
 }
 
+system_print ("git checkout drupal");
+
 my %added_remote;
 my @module_add_order;
-@module_add_order = sort { ($a->{objects} || die ("$a->{remote} has no objects!")) <=> ($b->{objects} || die ("$b->{remote} has no objects!")) } @modules;
+@module_add_order = sort { ($a->{objects} || die ("$a->{remote} has no objects!")) <=> ($b->{objects} || die ("$b->{remote} has no objects!")) } @git_modules;
 foreach my $module (@module_add_order) {
     if (! defined $added_remote{$module->{remote}}) {
 #	$module->{url} =~ s/^http/git/;
@@ -47,12 +55,12 @@ foreach my $module (@module_add_order) {
 }
 
 chdir "$repository_path/.." or die "can't chdir to $repository_path/..: $!";
-my $repository_backup = "$repository_path" . ".bak";
+$repository_backup = "$repository_path" . ".remotes-added";
 system_print ("rm -rf $repository_backup");
 system_print ("cp -a $repository_path $repository_backup");
 chdir $repository_path or die "can't chdir to $repository_path: $!";
 
-my @module_merge_order = @modules;
+my @module_merge_order = @git_modules;
 foreach my $module (@module_merge_order) {
     system_print ("git merge -s ours --no-commit $module->{commit}");
     if (defined $module->{tree}) {
@@ -63,16 +71,40 @@ foreach my $module (@module_merge_order) {
     system_print ("git commit -m 'Merged $module->{path}'");
 }
 
-# miscellaneous
-system_print ("git checkout patches");
-system_print ("git merge drupal");
-chdir "$repository_path/drupal-6.x/sites/all/modules/jquery_ui" or die "can't chdir to $repository_path/drupal-6.x/sites/all/modules/jquery_ui: $!";
-system_print ("wget http://jquery-ui.googlecode.com/files/jquery.ui-1.6.zip");
-system_print ("unzip jquery.ui-1.6.zip");
-system_print ("mv jquery.ui-1.6 jquery.ui");
-system_print ("rm jquery.ui-1.6.zip");
-chdir "$repository_path" or die "can't chdir to $repository_path: $!";
-system_print ("git add drupal-6.x/sites/all/modules/jquery_ui/jquery.ui");
-system_print ("git commit -m 'http://jquery-ui.googlecode.com/files/jquery.ui-1.6.zip'");
+chdir "$repository_path/.." or die "can't chdir to $repository_path/..: $!";
+$repository_backup = "$repository_path" . ".gits-merged";
+system_print ("rm -rf $repository_backup");
+system_print ("cp -a $repository_path $repository_backup");
+chdir $repository_path or die "can't chdir to $repository_path: $!";
+
+}
+
+# Modules distributed as files
+my @module_install_order = @file_modules;
+foreach my $module (@module_install_order) {
+    chdir $repository_path or die "can't chdir to $repository_path: $!";
+    system_print ("mkdir -p $module->{filename}.work");
+    chdir "$repository_path/$module->{filename}.work" or die "can't chdir to $repository_path/$module->{filename}.work: $!";
+    system_print ("wget $module->{url}");
+    system_print ($module->{unarch});
+    system_print ("rm -f $module->{filename}");
+    chdir $repository_path or die "can't chdir to $repository_path: $!";
+    system_print ("mkdir -p " . dirname($module->{path}));
+    if (defined $module->{wrapper_dir}) {
+	system_print ("mv $repository_path/$module->{filename}.work $repository_path/$module->{path}");
+    } elsif (defined $module->{dirname}) {
+	system_print ("mv $repository_path/$module->{filename}.work/$module->{dirname} $repository_path/$module->{path}");
+    } else {
+	system_print ("mv $repository_path/$module->{filename}.work/" . basename ($module->{filename}, qw(.zip .tar.gz .tar.bz2 .tbz)) . " $repository_path/$module->{path}");
+    }
+    system_print ("rm -rf $repository_path/$module->{filename}.work");
+    system_print ("git add $module->{path}");
+    system_print ("git commit -m $module->{url}");
+}
 
 
+chdir "$repository_path/.." or die "can't chdir to $repository_path/..: $!";
+$repository_backup = "$repository_path" . ".files-merged";
+system_print ("rm -rf $repository_backup");
+system_print ("cp -a $repository_path $repository_backup");
+chdir $repository_path or die "can't chdir to $repository_path: $!";

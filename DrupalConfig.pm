@@ -9,22 +9,19 @@
 package DrupalConfig;
 use Exporter;
 @ISA = ('Exporter');
-@EXPORT = ('drupal_modules', 'branch');
-
-my %branch;
+@EXPORT = qw(@git_modules @file_modules %branch system_print);
 
 $branch{drupal}{parent} = 'master';
 $branch{patches}{parent} = 'drupal';
 $branch{devel}{parent} = 'patches';
 $branch{deploy}{parent} = 'devel';
 
-my @drupal_modules;
-
 # some shortcuts
-my $drupal_project = "http://git.drupal.org/project";
-my $drupal_modules_path = "drupal-6.x/sites/all/modules";
+local $drupal_project = "http://git.drupal.org/project";
+local $modules_path = "drupal-6.x/sites/all/modules";
 
-require ModuleData.pl;
+do "GitModules.pl";
+do "FileModules.pl";
 
 sub system_print {
     my @cmd = @_;
