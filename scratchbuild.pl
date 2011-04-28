@@ -71,6 +71,7 @@ push @modules, { remote => "drupal.org/imagefield", path => "$modules_path/image
 push @modules, { remote => "drupal.org/imagefield_tokens", path => "$modules_path/imagefield_tokens/", url => "$drupal_project/imagefield_tokens.git", objects => 62, commit => "0418532bd", };
 push @modules, { remote => "drupal.org/inputstream", path => "$modules_path/inputstream/", url => "$drupal_project/inputstream.git", objects => 19, commit => "224bb3d57", };
 push @modules, { remote => "drupal.org/jquery_ui", path => "$modules_path/jquery_ui/", url => "$drupal_project/jquery_ui.git", objects => 288, commit => "a51a5ab23", };
+#push @modules, { remote => "jquery.com", path => "$modules_path/jquery_ui/jquery.ui", url => "http://github.com/jquery/jquery-ui.git", objects => 29507, commit => "", tags => 1 };
 push @modules, { remote => "drupal.org/json_server", path => "$modules_path/json_server/", url => "$drupal_project/json_server.git", objects => 75, commit => "528210e98", };
 push @modules, { remote => "drupal.org/link", path => "$modules_path/link/", url => "$drupal_project/link.git", objects => 1021, commit => "bba5c8a52", };
 push @modules, { remote => "drupal.org/logintoboggan", path => "$modules_path/logintoboggan/", url => "$drupal_project/logintoboggan.git", objects => 1569, commit => "1f32e758b", };
@@ -115,6 +116,7 @@ push @modules, { remote => "facebook-php-sdk", path => "$modules_path/fbconnect/
 push @modules, { remote => "drupal.org/ifeeldirty", path => "drupal-6.x/sites/all/themes/ifeeldirty/", url => "$drupal_project/ifeeldirty.git", objects => 60, commit => "20127b2b8", };
 push @modules, { remote => "drupal.org/minimalist", path => "drupal-6.x/sites/all/themes/minimalist/", url => "$drupal_project/minimalist.git", objects => (57+13), commit => "245ded7dc", tags => 1};
 push @modules, { remote => "drupal.org/pixture_reloaded", path => "drupal-6.x/sites/all/themes/pixture_reloaded/", url => "$drupal_project/pixture_reloaded.git", objects => 635, commit => "ce6fa1f68", };
+push @modules, { remote => "github/bom", path => "drupal-6.x/sites/all/modules/bom/", url => "http://github.com/wuertele/drupal-bom.git", objects => 5, commit => "40124f4ce", };
 
 system_print ("mkdir -p $repository_path");
 chdir $repository_path;
@@ -155,6 +157,18 @@ foreach my $module (@module_merge_order) {
     }
     system_print ("git commit -m 'Merged $module->{path}'");
 }
+
+# miscellaneous
+system_print ("git checkout patches");
+system_print ("git merge drupal");
+chdir "drupal-6.x/sites/all/modules/jquery_ui";
+system_print ("wget http://jquery-ui.googlecode.com/files/jquery.ui-1.6.zip");
+system_print ("unzip jquery.ui-1.6.zip");
+system_print ("mv jquery.ui-1.6 jquery.ui");
+system_print ("rm jquery.ui-1.6.zip");
+chdir "../../../../..";
+system_print ("git add drupal-6.x/sites/all/modules/jquery_ui/jquery.ui");
+system_print ("git commit -m 'http://jquery-ui.googlecode.com/files/jquery.ui-1.6.zip'");
 
 
 sub system_print {
