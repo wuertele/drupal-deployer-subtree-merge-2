@@ -96,11 +96,11 @@ push @modules, { remote => "drupal.org/seo_checklist", path => "$modules_path/se
 push @modules, { remote => "drupal.org/services", path => "$modules_path/services/", url => "$drupal_project/services.git", objects => 3837, commit => "c753db8a4", };
 push @modules, { remote => "drupal.org/site_verify", path => "$modules_path/site_verify/", url => "$drupal_project/site_verify.git", objects => 157, commit => "898124aea", };
 push @modules, { remote => "drupal.org/tablefield", path => "$modules_path/tablefield/", url => "$drupal_project/tablefield.git", objects => 147, commit => "40c54a58f", };
-push @modules, { remote => "drupal.org/tabs", path => "$modules_path/tabs/", url => "$drupal_project/tabs.git", objects => (255+12), commit => "e9ffaeb0d", tags => 1};
+push @modules, { remote => "drupal.org/tabs", path => "$modules_path/tabs/", url => "$drupal_project/tabs.git", objects => (255+12), commit => "7d6b2ba3", tags => 1};
 push @modules, { remote => "drupal.org/taxonomy_manager", path => "$modules_path/taxonomy_manager/", url => "$drupal_project/taxonomy_manager.git", objects => 913, commit => "309726cec", };
 push @modules, { remote => "drupal.org/text_noderef", path => "$modules_path/text_noderef/", url => "$drupal_project/text_noderef.git", objects => 11, commit => "5ba1c3930", };
 push @modules, { remote => "drupal.org/textformatter", path => "$modules_path/textformatter/", url => "$drupal_project/textformatter.git", objects => 18, commit => "f68bc4dbc", };
-push @modules, { remote => "drupal.org/token", path => "$modules_path/token/", url => "$drupal_project/token.git", objects => (1578+22), commit => "0418532bd", tags => 1};
+push @modules, { remote => "drupal.org/token", path => "$modules_path/token/", url => "$drupal_project/token.git", objects => (1578+22), commit => "f351e17b1", tags => 1};
 push @modules, { remote => "drupal.org/transliteration", path => "$modules_path/transliteration/", url => "$drupal_project/transliteration.git", objects => 1424, commit => "b43db0347", };
 push @modules, { remote => "drupal.org/units", path => "$modules_path/units/", url => "$drupal_project/units.git", objects => 44, commit => "017d72796", };
 push @modules, { remote => "drupal.org/unitsapi", path => "$modules_path/unitsapi/", url => "$drupal_project/unitsapi.git", objects => 169, commit => "b8f2874a8", };
