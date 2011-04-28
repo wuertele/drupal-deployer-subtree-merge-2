@@ -10,15 +10,17 @@
 #	David Wuertele	Tue Apr 26 11:21:23 2011	Steal This Program!!!
 
 use strict;
+use Cwd 'abs_path';
 
 my $quiet = undef;
 my $dry_run = undef;
 
-my $repository_path = shift;
-
-if (! defined ($repository_path)) {
+my $repository_relpath = shift;
+if (! defined ($repository_relpath)) {
     die "usage:  $0 <repository_path>";
 }
+
+my $repository_path = abs_path ($repository_relpath);
 
 my %branch;
 
@@ -141,11 +143,11 @@ foreach my $module (@module_add_order) {
     }
 }
 
-chdir "$repository_path/..";
+chdir "$repository_path/.." or die "can't chdir to $repository_path/..: $!";
 my $repository_backup = "$repository_path" . ".bak";
 system_print ("rm -rf $repository_backup");
 system_print ("cp -a $repository_path $repository_backup");
-chdir $repository_path;
+chdir $repository_path or die "can't chdir to $repository_path: $!";
 
 my @module_merge_order = @modules;
 foreach my $module (@module_merge_order) {
@@ -161,12 +163,12 @@ foreach my $module (@module_merge_order) {
 # miscellaneous
 system_print ("git checkout patches");
 system_print ("git merge drupal");
-chdir "drupal-6.x/sites/all/modules/jquery_ui";
+chdir "$repository_path/drupal-6.x/sites/all/modules/jquery_ui" or die "can't chdir to $repository_path/drupal-6.x/sites/all/modules/jquery_ui: $!";
 system_print ("wget http://jquery-ui.googlecode.com/files/jquery.ui-1.6.zip");
 system_print ("unzip jquery.ui-1.6.zip");
 system_print ("mv jquery.ui-1.6 jquery.ui");
 system_print ("rm jquery.ui-1.6.zip");
-chdir "../../../../..";
+chdir "$repository_path" or die "can't chdir to $repository_path: $!";
 system_print ("git add drupal-6.x/sites/all/modules/jquery_ui/jquery.ui");
 system_print ("git commit -m 'http://jquery-ui.googlecode.com/files/jquery.ui-1.6.zip'");
 
